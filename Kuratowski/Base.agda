@@ -3,6 +3,7 @@
 module FiniteSets.Kuratowski.Base where
 
 open import Cubical.Core.Prelude
+open import Cubical.Core.PropositionalTruncation
 open import Cubical.Foundations.HLevels
 open import Level
 
@@ -90,3 +91,16 @@ recK : isSet B
      → K A → B  
 recK Bset z ins f nlᴮ nrᴮ idemᴮ assocᴮ comᴮ = elimK Bset z ins
   (λ _ _ → f) (λ _ → nlᴮ) (λ _ → nrᴮ) idemᴮ  (λ _ _ _ → assocᴮ) λ _ _ → comᴮ             
+
+--------------------------------------------------------------------------------
+-- Membership relation
+
+data _∈_ {ℓ} {A : Set ℓ} (a : A) : K A → Set ℓ where
+  here  : ∀ {b}   → a ≡ b → a ∈ [ b ]
+  left  : ∀ {x y} → a ∈ x → a ∈ x ∪ y
+  right : ∀ {x y} → a ∈ y → a ∈ x ∪ y
+infix 5 _∈_
+
+_⊆_ : {A : Set ℓ} → K A → K A → Set ℓ 
+_⊆_ {A = A} x y = ∀ (a : A) → ∥ a ∈ x ∥ → ∥ a ∈ y ∥
+infix 5 _⊆_

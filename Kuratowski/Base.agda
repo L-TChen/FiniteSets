@@ -1,17 +1,23 @@
-{-# OPTIONS --safe --cubical #-}
+{-# OPTIONS --safe --cubical  --without-K #-}
 
 module FiniteSets.Kuratowski.Base where
 
-open import Cubical.Core.Prelude
+open import Cubical.Core.Prelude hiding (_∨_ ; _∧_)
 open import Cubical.Core.PropositionalTruncation
-open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.HLevels hiding (hProp)
+open import Cubical.Data.Sum
+open import Cubical.Data.Empty
+open import Cubical.Relation.Nullary
+open import Cubical.Relation.Binary
+
 open import Level
 
 private
   variable
-    ℓ ℓ'   : Level
+    ℓ ℓ' ℓ''  : Level
     A : Set ℓ
     B : Set ℓ'
+    C : Set ℓ''
 
 elimTrunc : ∀ {P : A → Set ℓ}
            → (PSet : (x : A) → isSet (P x))
@@ -94,13 +100,10 @@ recK Bset z ins f nlᴮ nrᴮ idemᴮ assocᴮ comᴮ = elimK Bset z ins
 
 --------------------------------------------------------------------------------
 -- Membership relation
-
+{-
 data _∈_ {ℓ} {A : Set ℓ} (a : A) : K A → Set ℓ where
-  here  : ∀ {b}   → a ≡ b → a ∈ [ b ]
-  left  : ∀ {x y} → a ∈ x → a ∈ x ∪ y
-  right : ∀ {x y} → a ∈ y → a ∈ x ∪ y
+  here  : ∀ {b}   → (a≡b : a ≡ b) → a ∈ [ b ]
+  left  : ∀ {x y} → (a∈x : a ∈ x) → a ∈ x ∪ y
+  right : ∀ {x y} → (a∈y : a ∈ y) → a ∈ x ∪ y
 infix 5 _∈_
-
-_⊆_ : {A : Set ℓ} → K A → K A → Set ℓ 
-_⊆_ {A = A} x y = ∀ (a : A) → ∥ a ∈ x ∥ → ∥ a ∈ y ∥
-infix 5 _⊆_
+-}

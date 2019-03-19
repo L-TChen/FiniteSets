@@ -22,8 +22,8 @@ private
     y ∪ (x ∪ x) ∪ y ≡⟨ cong (_∪ y) (cong (y ∪_) x∪x=x) ⟩
     y ∪ x ∪ y       ≡⟨ cong (_∪ y) (com y x) ⟩
     x ∪ y ∪ y       ≡⟨ sym (assoc x y y) ⟩
-    x ∪ (y ∪ y)       ≡⟨ cong (x ∪_) y∪y=y ⟩
-    x ∪ y             ∎
+    x ∪ (y ∪ y)     ≡⟨ cong (x ∪_) y∪y=y ⟩
+    x ∪ y           ∎
 
 a∈x⇒[x]∪x≡x : ∀ (a : A) x → ∥ a ∈ x ∥ → [ a ] ∪ x ≡ x
 a∈x⇒[x]∪x≡x a _ ∣ here {b = b} p ∣ =
@@ -52,8 +52,8 @@ y⊆x⇒y∪x≡x {x = x} = elimKprop (λ p q → funExt λ f → trunc _ _ (p f
    z ∪ x       ≡⟨  px (λ a → elimPropTrunc (λ _ → propTruncIsProp) λ a∈z → f a ∣ left a∈z ∣)  ⟩
    x           ∎
 
-y∪x≡x∧x∪y≡y : {x y : K A} → y ∪ x ≡ x → x ∪ y ≡ y → x ≡ y
-y∪x≡x∧x∪y≡y {x = x} {y} y∪x≡x x∪y≡y =
+y∪x≡x∧x∪y≡y : {x y : K A} → (y ∪ x ≡ x) × (x ∪ y ≡ y) → x ≡ y
+y∪x≡x∧x∪y≡y {x = x} {y} (y∪x≡x , x∪y≡y) =
   x     ≡⟨ sym y∪x≡x ⟩
   y ∪ x ≡⟨ com _ _ ⟩
   x ∪ y ≡⟨ x∪y≡y ⟩

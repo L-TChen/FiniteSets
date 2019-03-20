@@ -2,4 +2,5 @@ name: finite-sets
 depend:
   cubical 
   cubical-instance
+  standard-library
 include: .

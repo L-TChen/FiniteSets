@@ -2,13 +2,13 @@
 
 module FiniteSets.Kuratowski.Base where
 
-open import Cubical.Core.Prelude hiding (_∨_ ; _∧_)
+open import Cubical.Core.Prelude 
 open import Cubical.Core.PropositionalTruncation
-open import Cubical.Foundations.HLevels hiding (hProp)
-open import Cubical.Data.Sum
+open import Cubical.Foundations.HLevels 
+
 open import Cubical.Data.Empty
+
 open import Cubical.Relation.Nullary
-open import Cubical.Relation.Binary
 
 private
   variable
@@ -16,6 +16,12 @@ private
     A : Set ℓ
     B : Set ℓ'
     C : Set ℓ''
+
+
+infix 5 _∈_
+infix 5 _∉_
+infix 5 _⊆_
+infix 5 _≤_
 
 -- TODO: move this to SetTruncation module? 
 elimTrunc : ∀ {P : A → Set ℓ}
@@ -36,7 +42,7 @@ data K (A : Set ℓ) : Set ℓ where
   assoc : ∀ x y z → x ∪ (y ∪ z) ≡ (x ∪ y) ∪ z
   com   : ∀ x y → x ∪ y ≡ y ∪ x
   trunc : (x y : K A) → (p q : x ≡ y) → p ≡ q
-infixl 10 _∪_
+infixr 10 _∪_
 
 elimK : ∀ {P : K A → Set ℓ}
       → (PSet : {x : K A} → isSet (P x))
@@ -100,13 +106,16 @@ recK Bset z ins f nlᴮ nrᴮ idemᴮ assocᴮ comᴮ = elimK Bset z ins
 --------------------------------------------------------------------------------
 -- Membership relation
 
-data _∈_ {ℓ} {A : Set ℓ} (a : A) : K A → Set ℓ where
+data _∈_ {A : Set ℓ} (a : A) : K A → Set ℓ where
   here  : ∀ {b}   → (a≡b : a ≡ b) → a ∈ [ b ]
   left  : ∀ {x y} → (a∈x : a ∈ x) → a ∈ x ∪ y
   right : ∀ {x y} → (a∈y : a ∈ y) → a ∈ x ∪ y
-infix 5 _∈_
+
+_∉_ : {A : Set ℓ} → A → K A → Set ℓ
+a ∉ x = ¬ (a ∈ x)
 
 _⊆_ : {A : Set ℓ} → K A → K A → Set ℓ
 _⊆_ {A = A} x y = ∀ (a : A) → a ∈ x → a ∈ y
 
-infix 5 _⊆_
+_≤_ : {A : Set ℓ} → K A → K A → Set ℓ
+x ≤ y = x ∪ y ≡ y

@@ -1,0 +1,5 @@
+name: finite-sets
+depend:
+  cubical 
+  cubical-instance
+include: .

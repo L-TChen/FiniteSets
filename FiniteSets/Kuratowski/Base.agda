@@ -10,8 +10,6 @@ open import Cubical.Data.Empty
 open import Cubical.Relation.Nullary
 open import Cubical.Relation.Binary
 
-open import Level
-
 private
   variable
     ℓ ℓ' ℓ''  : Level
@@ -19,6 +17,7 @@ private
     B : Set ℓ'
     C : Set ℓ''
 
+-- TODO: move this to SetTruncation module? 
 elimTrunc : ∀ {P : A → Set ℓ}
            → (PSet : (x : A) → isSet (P x))
            → ∀ {x y} {p q : x ≡ y} (sq : p ≡ q)
@@ -100,10 +99,14 @@ recK Bset z ins f nlᴮ nrᴮ idemᴮ assocᴮ comᴮ = elimK Bset z ins
 
 --------------------------------------------------------------------------------
 -- Membership relation
-{-
+
 data _∈_ {ℓ} {A : Set ℓ} (a : A) : K A → Set ℓ where
   here  : ∀ {b}   → (a≡b : a ≡ b) → a ∈ [ b ]
   left  : ∀ {x y} → (a∈x : a ∈ x) → a ∈ x ∪ y
   right : ∀ {x y} → (a∈y : a ∈ y) → a ∈ x ∪ y
 infix 5 _∈_
--}
+
+_⊆_ : {A : Set ℓ} → K A → K A → Set ℓ
+_⊆_ {A = A} x y = ∀ (a : A) → a ∈ x → a ∈ y
+
+infix 5 _⊆_

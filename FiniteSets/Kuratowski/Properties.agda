@@ -146,11 +146,21 @@ y∪x≡x∧x∪y≡y {x = x} {y} (y∪x≡x , x∪y≡y) =
   x     ≡⟨ sym y∪x≡x ⟩
   y ∪ x ≡⟨ com _ _ ⟩
   x ∪ y ≡⟨ x∪y≡y ⟩
-  y     ∎ 
+  y     ∎
+  
+{-
+a∈[b]⇒a≡b : ∀ (a : A) b → a ∈ [ b ] → a ≡ b
+a∈[b]⇒a≡b = {!!}
 
+a∈x∪y⇒a∈x⊎a∈y : ∀ (a : A) x y → a ∈ x ∪ y → a ∈ x ⊎ a ∈ y
+a∈x∪y⇒a∈x⊎a∈y = ?
+-}
+
+{-
 extensionality : {A : Set ℓ} {x y : K A}
                  → (x ≡ y) ≃ ∀ (a : A) → a ∈ x ≡ a ∈ y
 extensionality {A = A} {x} {y} = {!!}
 
 []-injective : (a b : A) → [ a ] ≡ [ b ] → a ≡ b
-[]-injective a b = {!!}
+[]-injective a b p = {!subst (λ a !}
+-}

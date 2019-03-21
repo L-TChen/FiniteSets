@@ -5,12 +5,11 @@ module FiniteSets.List.Base where
 open import Cubical.Core.Everything
 open import Cubical.Foundations.HLevels
 
-open import Level
-
 private
   variable
     ℓ   : Level
     A B : Set ℓ
+
 
 
 elimTrunc : ∀ {P : A → Set ℓ}
@@ -65,3 +64,10 @@ recL : isSet B
 recL BSet z f duplᴮ comlᴮ =
   elimL BSet z (λ a _ b → f a b)
     (λ a _ pxs → duplᴮ a pxs) (λ a b _ pb → comlᴮ a b pb)
+
+infixr 5 _++_
+_++_ : L A → L A → L A
+_++_ xs ys = recL truncl ys (λ x xs++ys → x ∷ xs++ys) dupl coml xs
+
+[_] : A → L A
+[ a ] = a ∷ [] 

@@ -14,17 +14,17 @@ private
   variable
     ℓ  : Level
     A : Set ℓ
+    
+BoolisSemilattice : K A → Bool
+BoolisSemilattice = elimK BoolIsSet false (λ _ → true) (λ _ _ → _or_)
+  (λ _ →     or-identityˡ)
+  (λ _ →     or-identityʳ)
+  (λ _ →     or-idem _)
+  (λ _ _ _ → or-assoc)
+  λ _ _ →   or-comm
 
 [a]≢∅ : {a : A} → ¬ [ a ] ≡ ∅
-[a]≢∅ p = true≢false (cong nontrivial p)
-  where
-    nontrivial : K A → Bool
-    nontrivial = elimK BoolIsSet false (λ _ → true) (λ _ _ → _or_)
-      (λ _ → or-identityˡ)
-      (λ _ → or-identityʳ)
-      (λ _ → or-idem _)
-      (λ _ _ _ → or-assoc)
-      (λ _ _ → or-comm)
+[a]≢∅ p = true≢false (cong BoolisSemilattice p)
 
 {-
 []-injective : (a b : A) → [ a ] ≡ [ b ] → a ≡ b
@@ -118,20 +118,21 @@ a∉∅ a = lem a refl
 
 a∈x⇒[x]∪x≡x : ∀ (a : A) x → ∥ a ∈ x ∥ → [ a ] ∪ x ≡ x
 a∈x⇒[x]∪x≡x a _ ∣ here {b = b} p ∣ =
-   [ a ] ∪ [ b ]  ≡⟨ cong (λ a → [ a ] ∪ [ b ]) p ⟩
+   [ a ] ∪ [ b ] ≡⟨ cong (λ a → [ a ] ∪ [ b ]) p ⟩
    [ b ] ∪ [ b ] ≡⟨ idem b ⟩
-   [ b ]          ∎
+   [ b ]         ∎
 a∈x⇒[x]∪x≡x a _ ∣ left {x} {y} a∈x ∣ =
   [ a ] ∪ x ∪ y   ≡⟨ assoc _ x y ⟩
   ([ a ] ∪ x) ∪ y ≡⟨ cong (_∪ y) (a∈x⇒[x]∪x≡x a x ∣ a∈x ∣) ⟩
   x ∪ y           ∎
 a∈x⇒[x]∪x≡x a _ ∣ right {x} {y} a∈y ∣ =
-   [ a ] ∪ x ∪ y ≡⟨ cong ([ a ] ∪_) (com _ _) ⟩
-   [ a ] ∪ y ∪ x ≡⟨ assoc _ _ _ ⟩
-   ([ a ] ∪ y) ∪ x   ≡⟨ cong (_∪ x) (a∈x⇒[x]∪x≡x a y ∣ a∈y ∣) ⟩
+   [ a ] ∪ x ∪ y   ≡⟨ cong ([ a ] ∪_) (com _ _) ⟩
+   [ a ] ∪ y ∪ x   ≡⟨ assoc _ _ _ ⟩
+   ([ a ] ∪ y) ∪ x ≡⟨ cong (_∪ x) (a∈x⇒[x]∪x≡x a y ∣ a∈y ∣) ⟩
    y ∪ x           ≡⟨ com _ _ ⟩
    x ∪ y           ∎
-a∈x⇒[x]∪x≡x a x (squash a∈x a∈x₁ i) = trunc _ _ (a∈x⇒[x]∪x≡x a x a∈x) (a∈x⇒[x]∪x≡x a x a∈x₁) i
+a∈x⇒[x]∪x≡x a x (squash a∈x a∈x₁ i) =
+  trunc _ _ (a∈x⇒[x]∪x≡x a x a∈x) (a∈x⇒[x]∪x≡x a x a∈x₁) i
 
 y⊆x⇒y∪x≡x  : ∀ {x : K A} y → (y ⊆ x) → (y ∪ x) ≡ x
 y⊆x⇒y∪x≡x {x = x} = elimKprop (λ p q → funExt λ f → trunc _ _ (p f) (q f))

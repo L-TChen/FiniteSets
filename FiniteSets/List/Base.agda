@@ -5,12 +5,12 @@ module FiniteSets.List.Base where
 open import Cubical.Core.Everything
 open import Cubical.Foundations.HLevels
 
+open import Cubical.Relation.Nullary
+
 private
   variable
     ℓ   : Level
     A B : Set ℓ
-
-
 
 elimTrunc : ∀ {P : A → Set ℓ}
            → (PSet : (x : A) → isSet (P x))
@@ -71,3 +71,16 @@ _++_ xs ys = recL truncl ys (λ x xs++ys → x ∷ xs++ys) dupl coml xs
 
 [_] : A → L A
 [ a ] = a ∷ [] 
+
+data _∈_ {A : Set ℓ} (a : A) : L A → Set ℓ where
+  here  : ∀ {xs}            → a ∈ a ∷ xs
+  there : ∀ {xs b} → a ∈ xs → a ∈ b ∷ xs
+
+_∉_ : {A : Set ℓ} → A → L A → Set ℓ
+a ∉ xs = ¬ (a ∈ xs)
+
+infix 5 _∈_
+infix 5 _∉_
+
+-- infix 5 _⊆_
+-- infix 5 _≤_

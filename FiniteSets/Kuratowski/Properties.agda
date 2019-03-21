@@ -4,6 +4,7 @@ module FiniteSets.Kuratowski.Properties where
 
 open import Cubical.Core.Everything
 open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.Equiv
 open import Cubical.Data.Prod
 open import Cubical.Data.Bool
 open import Cubical.Relation.Nullary
@@ -26,21 +27,16 @@ BoolisSemilattice = elimK BoolIsSet false (λ _ → true) (λ _ _ → _or_)
 [a]≢∅ : {a : A} → ¬ [ a ] ≡ ∅
 [a]≢∅ p = true≢false (cong BoolisSemilattice p)
 
-{-
-[]-injective : (a b : A) → [ a ] ≡ [ b ] → a ≡ b
-[]-injective a b = {!!}
--}
-
 ∪-idem : (x : K A) → x ∪ x ≡ x
 ∪-idem {A = A} = elimKprop (trunc _ _) (nl ∅) idem λ x y x∪x=x y∪y=y → 
-    (x ∪ y) ∪ x ∪ y ≡⟨ assoc (x ∪ y) x y ⟩
-    ((x ∪ y) ∪ x) ∪ y   ≡⟨ cong (_∪ y) (cong (_∪ x) (com x y)) ⟩
-    ((y ∪ x) ∪ x) ∪ y   ≡⟨ cong (_∪ y) (sym (assoc y x x)) ⟩
-    (y ∪ x ∪ x) ∪ y ≡⟨ cong (_∪ y) (cong (y ∪_) x∪x=x) ⟩
+    (x ∪ y) ∪ x ∪ y   ≡⟨ assoc (x ∪ y) x y ⟩
+    ((x ∪ y) ∪ x) ∪ y ≡⟨ cong (_∪ y) (cong (_∪ x) (com x y)) ⟩
+    ((y ∪ x) ∪ x) ∪ y ≡⟨ cong (_∪ y) (sym (assoc y x x)) ⟩
+    (y ∪ x ∪ x) ∪ y   ≡⟨ cong (_∪ y) (cong (y ∪_) x∪x=x) ⟩
     (y ∪ x) ∪ y       ≡⟨ cong (_∪ y) (com y x) ⟩
     (x ∪ y) ∪ y       ≡⟨ sym (assoc x y y) ⟩
-    x ∪ y ∪ y     ≡⟨ cong (x ∪_) y∪y=y ⟩
-    x ∪ y           ∎
+    x ∪ y ∪ y         ≡⟨ cong (x ∪_) y∪y=y ⟩
+    x ∪ y             ∎
 
 --------------------------------------------------------------------------------
 -- ≤ is a partial order
@@ -98,12 +94,13 @@ BoolisSemilattice = elimK BoolIsSet false (λ _ → true) (λ _ _ → _or_)
   y ∪ ∅ ≡⟨ nr y ⟩
   y     ∎ 
 
-x∪y≡∅ˡ : (x y : K A) → x ∪ y ≡ ∅ → x ≡ ∅
-x∪y≡∅ˡ x y x∪y≡∅ =
+∪-conicalˡ : (x y : K A) → x ∪ y ≡ ∅ → x ≡ ∅
+∪-conicalˡ x y x∪y≡∅ =
   ≤-antisym x ∅ (≤-isAlgOrder _ _ y x∪y≡∅) (nl x)
 
-x∪y≡∅ʳ : (x y : K A) → x ∪ y ≡ ∅ → y ≡ ∅
-x∪y≡∅ʳ x y x∪y≡∅ = x∪y≡∅ˡ y x (subst (λ x → x ≡ ∅) (com _ _) x∪y≡∅)
+∪-conicalʳ : (x y : K A) → x ∪ y ≡ ∅ → y ≡ ∅
+∪-conicalʳ x y ∪-conical =
+  ∪-conicalˡ y x (subst (λ x → x ≡ ∅) (com _ _) ∪-conical)
 
 --------------------------------------------------------------------------------
 -- a ∉ ∅
@@ -113,8 +110,8 @@ a∉∅ a = lem a refl
   where
     lem : ∀ (a : A) {x} → x ≡ ∅ → a ∉ x
     lem a p (here a≡b)  = [a]≢∅ p
-    lem a p (left a∈x)  = lem a (x∪y≡∅ˡ _ _ p) a∈x
-    lem a p (right a∈x) = lem a (x∪y≡∅ʳ _ _ p) a∈x
+    lem a p (left a∈x)  = lem a (∪-conicalˡ _ _ p) a∈x
+    lem a p (right a∈x) = lem a (∪-conicalʳ _ _ p) a∈x
 
 a∈x⇒[x]∪x≡x : ∀ (a : A) x → ∥ a ∈ x ∥ → [ a ] ∪ x ≡ x
 a∈x⇒[x]∪x≡x a _ ∣ here {b = b} p ∣ =
@@ -151,11 +148,9 @@ y∪x≡x∧x∪y≡y {x = x} {y} (y∪x≡x , x∪y≡y) =
   x ∪ y ≡⟨ x∪y≡y ⟩
   y     ∎ 
 
-{-
 extensionality : {A : Set ℓ} {x y : K A}
-                 → Lift _ (x ≡ y) ≡ ∀ (a : A) → a ∈ x ≡ a ∈ y
-extensionality {A = A} {x} {y} = 
-  Lift _ (x ≡ y)                     ≡⟨ cong (Lift _) {!!} ⟩
-  Lift _ ((y ∪ x ≡ x) × (x ∪ y ≡ y)) ≡⟨ {!!} ⟩
-  (∀ (a : A) → a ∈ x ≡ a ∈ y)        ∎ 
--}
+                 → (x ≡ y) ≃ ∀ (a : A) → a ∈ x ≡ a ∈ y
+extensionality {A = A} {x} {y} = {!!}
+
+[]-injective : (a b : A) → [ a ] ≡ [ b ] → a ≡ b
+[]-injective a b = {!!}

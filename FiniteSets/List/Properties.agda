@@ -64,25 +64,17 @@ IsoKL {ℓ} {A} = iso f g f∘g=id g∘f=id
     g-homo : ∀ xs ys → g (xs ++ ys) ≡ g xs ∪ g ys
     g-homo = elimLprop (propPi λ _ → trunck _ _) (λ ys → sym (nl (g ys)))
       λ a xs f ys →
-        g (a ∷ xs ++ ys)       ≡⟨ refl ⟩
         K[ a ] ∪ g (xs ++ ys)  ≡⟨ cong (K[ a ] ∪_) (f ys) ⟩
         K[ a ] ∪ (g xs ∪ g ys) ≡⟨ assoc _ _ _ ⟩
         g (a ∷ xs) ∪ g ys      ∎ 
       
     f∘g=id : section f g
-    f∘g=id = elimLprop (trunc _ _) refl
-      λ a xs f∘gxs≡xs →
-        f (g (a ∷ xs))          ≡⟨ refl ⟩
-        f (K[ a ]  ∪ g xs)    ≡⟨ refl ⟩
-        f (K[ a ]) ++ f (g xs) ≡⟨ cong (a ∷_) f∘gxs≡xs ⟩
-        a ∷ xs                   ∎ 
+    f∘g=id = elimLprop (trunc _ _) refl λ a xs → cong (a ∷_)
     
     g∘f=id : retract f g
     g∘f=id = elimKprop (trunck _ _) refl (λ _ → nr _)
       λ x y g∘fx≡x g∘fy≡y →
         g (f (x ∪ y))     ≡⟨ refl ⟩
         g (f x ++ f y)    ≡⟨ g-homo (f x) (f y) ⟩
-        g (f x) ∪ g (f y) ≡⟨ cong (g (f x) ∪_) g∘fy≡y ⟩  -- TODO: implement cong₂
-        g (f x) ∪ y       ≡⟨ cong (_∪ y) g∘fx≡x ⟩ 
+        g (f x) ∪ g (f y) ≡⟨ cong₂ (_∪_) g∘fx≡x g∘fy≡y ⟩
         x ∪ y             ∎
-

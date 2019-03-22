@@ -2,41 +2,63 @@
 
 module FiniteSets.Kuratowski.Properties where
 
-open import Cubical.Core.Everything
+open import Cubical.Core.Everything hiding (_∨_)
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Equiv
 open import Cubical.Data.Prod
 open import Cubical.Data.Bool
 open import Cubical.Relation.Nullary
 
+open import Cubical.Instance
+open import Cubical.Instance.Algebra.Semilattice
+
 open import FiniteSets.Kuratowski.Base
 
 private
   variable
-    ℓ  : Level
+    ℓ ℓ' : Level
     A : Set ℓ
-    
-BoolisSemilattice : K A → Bool
-BoolisSemilattice = elimK BoolIsSet false (λ _ → true) (λ _ _ → _or_)
-  (λ _ →     or-identityˡ)
-  (λ _ →     or-identityʳ)
-  (λ _ →     or-idem _)
-  (λ _ _ _ → or-assoc)
-  λ _ _ →   or-comm
-
-[a]≢∅ : {a : A} → ¬ [ a ] ≡ ∅
-[a]≢∅ p = true≢false (cong BoolisSemilattice p)
+    B : Set ℓ'
 
 ∪-idem : (x : K A) → x ∪ x ≡ x
 ∪-idem {A = A} = elimKprop (trunc _ _) (nl ∅) idem λ x y x∪x=x y∪y=y → 
-    (x ∪ y) ∪ x ∪ y   ≡⟨ assoc (x ∪ y) x y ⟩
-    ((x ∪ y) ∪ x) ∪ y ≡⟨ cong (_∪ y) (cong (_∪ x) (com x y)) ⟩
-    ((y ∪ x) ∪ x) ∪ y ≡⟨ cong (_∪ y) (sym (assoc y x x)) ⟩
-    (y ∪ x ∪ x) ∪ y   ≡⟨ cong (_∪ y) (cong (y ∪_) x∪x=x) ⟩
-    (y ∪ x) ∪ y       ≡⟨ cong (_∪ y) (com y x) ⟩
-    (x ∪ y) ∪ y       ≡⟨ sym (assoc x y y) ⟩
-    x ∪ y ∪ y         ≡⟨ cong (x ∪_) y∪y=y ⟩
-    x ∪ y             ∎
+  (x ∪ y) ∪ x ∪ y   ≡⟨ assoc (x ∪ y) x y ⟩
+  ((x ∪ y) ∪ x) ∪ y ≡⟨ cong (_∪ y) (cong (_∪ x) (com x y)) ⟩
+  ((y ∪ x) ∪ x) ∪ y ≡⟨ cong (_∪ y) (sym (assoc y x x)) ⟩
+  (y ∪ x ∪ x) ∪ y   ≡⟨ cong (_∪ y) (cong (y ∪_) x∪x=x) ⟩
+  (y ∪ x) ∪ y       ≡⟨ cong (_∪ y) (com y x) ⟩
+  (x ∪ y) ∪ y       ≡⟨ sym (assoc x y y) ⟩
+  x ∪ y ∪ y         ≡⟨ cong (x ∪_) y∪y=y ⟩
+  x ∪ y             ∎
+
+instance
+  ∪-IsSemilattice : IsSemilattice (K A) _∪_ ∅
+  ∪-IsSemilattice = record
+    { Aset = trunc
+    ; identityˡ = nl
+    ; identityʳ = nr
+    ; idempotency = ∪-idem
+    ; associativity = assoc
+    ; commutativity = com
+    }
+
+  Or-IsSemilattice : IsSemilattice Bool _or_ false
+  Or-IsSemilattice = record
+    { Aset          = BoolIsSet
+    ; identityˡ     = or-identityˡ
+    ; identityʳ     = or-identityʳ
+    ; idempotency   = or-idem 
+    ; associativity = or-assoc
+    ; commutativity = or-comm
+    }
+
+KA-is-free : ∀ ⊥ _∨_ ⦃ _ : IsSemilattice B _∨_ ⊥ ⦄
+           → (A → B) → K A → B
+KA-is-free ⊥ _∨_ f = recK Aset ⊥ f _∨_
+  identityˡ identityʳ (λ _ → idempotency _) associativity commutativity
+
+[a]≢∅ : {a : A} → ¬ [ a ] ≡ ∅
+[a]≢∅ p = true≢false (cong (KA-is-free false _or_ (λ _ → true)) p)
 
 --------------------------------------------------------------------------------
 -- ≤ is a partial order
@@ -147,20 +169,10 @@ y∪x≡x∧x∪y≡y {x = x} {y} (y∪x≡x , x∪y≡y) =
   y ∪ x ≡⟨ com _ _ ⟩
   x ∪ y ≡⟨ x∪y≡y ⟩
   y     ∎
-  
-{-
-a∈[b]⇒a≡b : ∀ (a : A) b → a ∈ [ b ] → a ≡ b
-a∈[b]⇒a≡b = {!!}
 
-a∈x∪y⇒a∈x⊎a∈y : ∀ (a : A) x y → a ∈ x ∪ y → a ∈ x ⊎ a ∈ y
-a∈x∪y⇒a∈x⊎a∈y = ?
--}
 
 {-
 extensionality : {A : Set ℓ} {x y : K A}
                  → (x ≡ y) ≃ ∀ (a : A) → a ∈ x ≡ a ∈ y
 extensionality {A = A} {x} {y} = {!!}
-
-[]-injective : (a b : A) → [ a ] ≡ [ b ] → a ≡ b
-[]-injective a b p = {!subst (λ a !}
 -}

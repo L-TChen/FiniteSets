@@ -1,15 +1,17 @@
-{-# OPTIONS --safe --cubical #-}
+{-# OPTIONS --cubical --allow-unsolved-metas #-}
 
 module FiniteSets.Kuratowski.Properties where
 
 open import Cubical.Core.Everything hiding (_∨_)
 open import Cubical.Foundations.HLevels
-open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Isomorphism 
 open import Cubical.Data.Prod
 open import Cubical.Data.Bool
+open import Cubical.Data.Sum
+open import Cubical.Data.Empty
 open import Cubical.Relation.Nullary
 
-open import Cubical.Instance
+--open import Cubical.Instance
 open import Cubical.Instance.Algebra.Semilattice
 
 open import FiniteSets.Kuratowski.Base
@@ -19,38 +21,6 @@ private
     ℓ ℓ' : Level
     A : Set ℓ
     B : Set ℓ'
-
-∪-idem : (x : K A) → x ∪ x ≡ x
-∪-idem {A = A} = elimKprop (trunc _ _) (nl ∅) idem λ x y x∪x=x y∪y=y → 
-  (x ∪ y) ∪ x ∪ y   ≡⟨ assoc (x ∪ y) x y ⟩
-  ((x ∪ y) ∪ x) ∪ y ≡⟨ cong (_∪ y) (cong (_∪ x) (com x y)) ⟩
-  ((y ∪ x) ∪ x) ∪ y ≡⟨ cong (_∪ y) (sym (assoc y x x)) ⟩
-  (y ∪ x ∪ x) ∪ y   ≡⟨ cong (_∪ y) (cong (y ∪_) x∪x=x) ⟩
-  (y ∪ x) ∪ y       ≡⟨ cong (_∪ y) (com y x) ⟩
-  (x ∪ y) ∪ y       ≡⟨ sym (assoc x y y) ⟩
-  x ∪ y ∪ y         ≡⟨ cong (x ∪_) y∪y=y ⟩
-  x ∪ y             ∎
-
-instance
-  ∪-IsSemilattice : IsSemilattice (K A) _∪_ ∅
-  ∪-IsSemilattice = record
-    { Aset = trunc
-    ; identityˡ = nl
-    ; identityʳ = nr
-    ; idempotency = ∪-idem
-    ; associativity = assoc
-    ; commutativity = com
-    }
-
-  Or-IsSemilattice : IsSemilattice Bool _or_ false
-  Or-IsSemilattice = record
-    { Aset          = BoolIsSet
-    ; identityˡ     = or-identityˡ
-    ; identityʳ     = or-identityʳ
-    ; idempotency   = or-idem 
-    ; associativity = or-assoc
-    ; commutativity = or-comm
-    }
 
 KA-is-free : ∀ ⊥ _∨_ ⦃ _ : IsSemilattice B _∨_ ⊥ ⦄
            → (A → B) → K A → B
@@ -65,7 +35,7 @@ KA-is-free ⊥ _∨_ f = recK Aset ⊥ f _∨_
 -- ≤ coincides with the algebraic ordering with respect to the monoid structure.
 
 ≤-refl : (x : K A) → x ≤ x
-≤-refl = ∪-idem
+≤-refl = idempotency
 
 ≤-antisym : (x y : K A) → x ≤ y → y ≤ x → x ≡ y
 ≤-antisym x y x≤y y≤x =
@@ -89,7 +59,7 @@ KA-is-free ⊥ _∨_ f = recK Aset ⊥ f _∨_
 ≤-isAlgOrder x y z p =
   x ∪ y       ≡⟨ cong (x ∪_) (sym p) ⟩
   x ∪ x ∪ z   ≡⟨ assoc _ _ _ ⟩
-  (x ∪ x) ∪ z ≡⟨ cong (_∪ z) (∪-idem _) ⟩
+  (x ∪ x) ∪ z ≡⟨ cong (_∪ z) (idempotency _) ⟩
   x ∪ z       ≡⟨ p ⟩
   y           ∎
   
@@ -99,7 +69,7 @@ KA-is-free ⊥ _∨_ f = recK Aset ⊥ f _∨_
 ∪-sup₁ : (x y : K A) → x ≤ x ∪ y
 ∪-sup₁ x y =
   x ∪ x ∪ y   ≡⟨ assoc _ _ _ ⟩
-  (x ∪ x) ∪ y ≡⟨ cong (_∪ y) (∪-idem _) ⟩
+  (x ∪ x) ∪ y ≡⟨ cong (_∪ y) (idempotency _) ⟩
   x ∪ y       ∎ 
 
 ∪-sup₂ : (x y z : K A) → x ≤ z → y ≤ z → x ∪ y ≤ z
@@ -118,61 +88,62 @@ KA-is-free ⊥ _∨_ f = recK Aset ⊥ f _∨_
 
 ∪-conicalˡ : (x y : K A) → x ∪ y ≡ ∅ → x ≡ ∅
 ∪-conicalˡ x y x∪y≡∅ =
-  ≤-antisym x ∅ (≤-isAlgOrder _ _ y x∪y≡∅) (nl x)
+  ≤-antisym x ∅ (≤-isAlgOrder _ _ y x∪y≡∅) (identityˡ x)
 
 ∪-conicalʳ : (x y : K A) → x ∪ y ≡ ∅ → y ≡ ∅
-∪-conicalʳ x y ∪-conical =
-  ∪-conicalˡ y x (subst (λ x → x ≡ ∅) (com _ _) ∪-conical)
+∪-conicalʳ x y x∪y≡∅ =
+  ≤-antisym _ _ (≤-isAlgOrder y ∅ x (subst (_≡ ∅) (com x y) x∪y≡∅)) (identityˡ y ) 
 
 --------------------------------------------------------------------------------
 -- a ∉ ∅
 
 a∉∅ : (a : A) → a ∉ ∅
-a∉∅ a = lem a refl
+a∉∅ a = lem refl
   where
-    lem : ∀ (a : A) {x} → x ≡ ∅ → a ∉ x
-    lem a p (here a≡b)  = [a]≢∅ p
-    lem a p (left a∈x)  = lem a (∪-conicalˡ _ _ p) a∈x
-    lem a p (right a∈x) = lem a (∪-conicalʳ _ _ p) a∈x
+    lem : ∀ {x} → x ≡ ∅ → a ∉ x
+    lem p here        = [a]≢∅ p
+    lem p (left a∈x)  = lem (∪-conicalˡ _ _ p) a∈x
+    lem p (right a∈x) = lem (∪-conicalʳ _ _ p) a∈x
+    lem p (sq a∈x a∈x₁ i) =
+      toPathP {A = λ _ → ⊥} (isProp⊥ (transp (λ i → ⊥) i0 (g a∈x)) (g a∈x₁)) i
+        where g = lem p
 
-a∈x⇒[x]∪x≡x : ∀ (a : A) x → ∥ a ∈ x ∥ → [ a ] ∪ x ≡ x
-a∈x⇒[x]∪x≡x a _ ∣ here {b = b} p ∣ =
-   [ a ] ∪ [ b ] ≡⟨ cong (λ a → [ a ] ∪ [ b ]) p ⟩
-   [ b ] ∪ [ b ] ≡⟨ idem b ⟩
-   [ b ]         ∎
-a∈x⇒[x]∪x≡x a _ ∣ left {x} {y} a∈x ∣ =
-  [ a ] ∪ x ∪ y   ≡⟨ assoc _ x y ⟩
-  ([ a ] ∪ x) ∪ y ≡⟨ cong (_∪ y) (a∈x⇒[x]∪x≡x a x ∣ a∈x ∣) ⟩
-  x ∪ y           ∎
-a∈x⇒[x]∪x≡x a _ ∣ right {x} {y} a∈y ∣ =
-   [ a ] ∪ x ∪ y   ≡⟨ cong ([ a ] ∪_) (com _ _) ⟩
-   [ a ] ∪ y ∪ x   ≡⟨ assoc _ _ _ ⟩
-   ([ a ] ∪ y) ∪ x ≡⟨ cong (_∪ x) (a∈x⇒[x]∪x≡x a y ∣ a∈y ∣) ⟩
-   y ∪ x           ≡⟨ com _ _ ⟩
-   x ∪ y           ∎
-a∈x⇒[x]∪x≡x a x (squash a∈x a∈x₁ i) =
-  trunc _ _ (a∈x⇒[x]∪x≡x a x a∈x) (a∈x⇒[x]∪x≡x a x a∈x₁) i
+a∈x⇒[x]∪x≡x : ∀ (a : A) x → a ∈ x → [ a ] ∪ x ≡ x
+a∈x⇒[x]∪x≡x a = elim∈prop (trunc _ _) (idem a)
+  (λ x y a∈x a∪x≡x →
+    [ a ] ∪ x ∪ y   ≡⟨ assoc _ _ _ ⟩
+    ([ a ] ∪ x) ∪ y ≡⟨ cong (_∪ y) a∪x≡x ⟩
+    x ∪ y           ∎)
+  (λ x y a∈y a∪y≡y →
+    [ a ] ∪ x ∪ y   ≡⟨ cong ([ a ] ∪_) (com _ _) ⟩
+    [ a ] ∪ y ∪ x   ≡⟨ assoc _ _ _ ⟩
+    ([ a ] ∪ y) ∪ x ≡⟨ cong (_∪ x) a∪y≡y ⟩
+    y ∪ x           ≡⟨ com _ _ ⟩
+    x ∪ y           ∎)
 
 y⊆x⇒y∪x≡x  : ∀ {x : K A} y → (y ⊆ x) → (y ∪ x) ≡ x
 y⊆x⇒y∪x≡x {x = x} = elimKprop (λ p q → funExt λ f → trunc _ _ (p f) (q f))
   (λ _ → nl _)
-  (λ a p → a∈x⇒[x]∪x≡x a _ ∣ p a (here refl) ∣ )
+  (λ a p → a∈x⇒[x]∪x≡x a _ (p a here) )
   λ z y px py f →
    (z ∪ y) ∪ x ≡⟨ sym (assoc _ _ _) ⟩
    z ∪ y ∪ x   ≡⟨ cong (z ∪_) (py λ a a∈y → f a (right a∈y)) ⟩
-   z ∪ x       ≡⟨  px (λ a a∈z → f a (left a∈z) )  ⟩
+   z ∪ x       ≡⟨ px (λ a a∈z → f a (left a∈z) )  ⟩
    x           ∎
 
 y∪x≡x∧x∪y≡y : {x y : K A} → (y ∪ x ≡ x) × (x ∪ y ≡ y) → x ≡ y
-y∪x≡x∧x∪y≡y {x = x} {y} (y∪x≡x , x∪y≡y) =
-  x     ≡⟨ sym y∪x≡x ⟩
-  y ∪ x ≡⟨ com _ _ ⟩
-  x ∪ y ≡⟨ x∪y≡y ⟩
-  y     ∎
-
+y∪x≡x∧x∪y≡y (y∪x≡x , x∪y≡y) = ≤-antisym _ _ x∪y≡y y∪x≡x
 
 {-
 extensionality : {A : Set ℓ} {x y : K A}
                  → (x ≡ y) ≃ ∀ (a : A) → a ∈ x ≡ a ∈ y
 extensionality {A = A} {x} {y} = {!!}
 -}
+
+module Decidable (_≟_ : (x y : A) → Dec ∥ x ≡ y ∥) where
+ 
+  []-injective : {a b : A} → [ a ] ≡ [ b ] → ∥ a ≡ b ∥
+  []-injective {a} {b} eq = {!!}
+
+  a∈[b]⇒a≡b : ∀ {a b : A} x → a ∈ x → x ≡ [ b ] → ∥ a ≡ b ∥
+  a∈[b]⇒a≡b = elim∈prop (propPi λ _ → propTruncIsProp) {!!} {!!} {!!}

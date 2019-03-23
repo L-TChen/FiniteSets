@@ -5,10 +5,9 @@ module FiniteSets.Kuratowski.Base where
 open import Cubical.Core.Prelude 
 open import Cubical.Core.PropositionalTruncation
 open import Cubical.Foundations.HLevels 
-
-open import Cubical.Data.Empty
-
 open import Cubical.Relation.Nullary
+
+open import Cubical.Instance.Algebra.Semilattice
 
 private
   variable
@@ -17,7 +16,6 @@ private
     B : Set ℓ'
     C : Set ℓ''
 
-
 infix 5 _∈_
 infix 5 _∉_
 infix 5 _⊆_
@@ -25,12 +23,12 @@ infix 5 _≤_
 
 -- TODO: move this to SetTruncation module? 
 elimTrunc : ∀ {P : A → Set ℓ}
-           → (PSet : (x : A) → isSet (P x))
+           → (PSet : {x : A} → isSet (P x))
            → ∀ {x y} {p q : x ≡ y} (sq : p ≡ q)
            → ∀ Pxs Pys Pp Pq → PathP (λ i → PathP (λ j → P (sq i j)) Pxs Pys) Pp Pq
 elimTrunc {P = P} PSet {xs} {p = p} =
   J (λ q sq → ∀ Pxs Pys Pp Pq → PathP (λ i → PathP (λ j → P (sq i j)) Pxs Pys) Pp Pq)
-    (J (λ ys (p : xs ≡ ys) → ∀ Pxs Pys → (Pp Pq : PathP (λ i → P (p i)) Pxs Pys) → Pp ≡ Pq) (PSet xs) p)
+    (J (λ ys (p : xs ≡ ys) → ∀ Pxs Pys → (Pp Pq : PathP (λ i → P (p i)) Pxs Pys) → Pp ≡ Pq) PSet p)
 
 data K (A : Set ℓ) : Set ℓ where
   ∅     : K A
@@ -72,7 +70,7 @@ elimK PSet z s f nlᴾ nrᴾ idemᴾ assocᴾ comᴾ (assoc x y k i) = assocᴾ 
 elimK PSet z s f nlᴾ nrᴾ idemᴾ assocᴾ comᴾ (com x y i) = comᴾ x y  (g x) (g y) i
   where g = elimK PSet z s f nlᴾ nrᴾ idemᴾ assocᴾ comᴾ
 elimK {A = A} PSet z s f nlᴾ nrᴾ idemᴾ assocᴾ comᴾ (trunc x y p q i j) =
-  elimTrunc {A = K A} (λ x → PSet {x}) (trunc x y p q) (g x) (g y) (cong g p) (cong g q) i j
+  elimTrunc {A = K A} PSet (trunc x y p q) (g x) (g y) (cong g p) (cong g q) i j
   where g = elimK PSet z s f nlᴾ nrᴾ idemᴾ assocᴾ comᴾ
 
 elimKprop : ∀ {P : K A → Set ℓ}
@@ -107,9 +105,10 @@ recK Bset z ins f nlᴮ nrᴮ idemᴮ assocᴮ comᴮ = elimK Bset z ins
 -- Membership relation
 
 data _∈_ {A : Set ℓ} (a : A) : K A → Set ℓ where
-  here  : ∀ {b}   → (a≡b : a ≡ b) → a ∈ [ b ]
+  here  : a ∈ [ a ]
   left  : ∀ {x y} → (a∈x : a ∈ x) → a ∈ x ∪ y
   right : ∀ {x y} → (a∈y : a ∈ y) → a ∈ x ∪ y
+  sq    : ∀ {x}   → (p q : a ∈ x) → p ≡ q
 
 _∉_ : {A : Set ℓ} → A → K A → Set ℓ
 a ∉ x = ¬ (a ∈ x)
@@ -117,5 +116,43 @@ a ∉ x = ¬ (a ∈ x)
 _⊆_ : {A : Set ℓ} → K A → K A → Set ℓ
 _⊆_ {A = A} x y = ∀ (a : A) → a ∈ x → a ∈ y
 
+elim∈prop : ∀ {a : A} {P : ∀ {x} → a ∈ x → Set ℓ}
+          → (PProp : ∀ {x} {p : a ∈ x} → isProp (P p))
+          → P here
+          → (∀ x y (a∈x : a ∈ x) → P a∈x → P (left  {y = y} a∈x))
+          → (∀ x y (a∈y : a ∈ y) → P a∈y → P (right {x = x} a∈y))
+          → ∀ x (a∈x : a ∈ x) → P a∈x
+elim∈prop PProp hereᴾ leftᴾ rightᴾ _ here                = hereᴾ
+elim∈prop PProp hereᴾ leftᴾ rightᴾ _ (left {x} {y}  a∈x) = leftᴾ x y a∈x (g a∈x)
+  where g = elim∈prop PProp hereᴾ leftᴾ rightᴾ _
+elim∈prop PProp hereᴾ leftᴾ rightᴾ _ (right {x} {y} a∈x) = rightᴾ x y a∈x (g a∈x)
+  where g = elim∈prop PProp hereᴾ leftᴾ rightᴾ _
+elim∈prop {P = P} PProp hereᴾ leftᴾ rightᴾ _ (sq a∈x a∈x₁ i) =
+   toPathP {A = λ i → P (sq a∈x a∈x₁ i)} (PProp (transp (λ i → P (sq a∈x a∈x₁ i)) i0 (g a∈x)) (g a∈x₁)) i
+    where g = elim∈prop PProp hereᴾ leftᴾ rightᴾ _
+
 _≤_ : {A : Set ℓ} → K A → K A → Set ℓ
 x ≤ y = x ∪ y ≡ y
+
+instance
+  ∪-IsSemilattice : IsSemilattice (K A) _∪_ ∅
+  ∪-IsSemilattice = record
+    { Aset = trunc
+    ; identityˡ     = nl
+    ; identityʳ     = nr
+    ; idempotency   = ∪-idem
+    ; associativity = assoc
+    ; commutativity = com
+    }
+    where
+      ∪-idem : (x : K A) → x ∪ x ≡ x
+      ∪-idem {A = A} = elimKprop (trunc _ _) (nl ∅) idem λ x y x∪x=x y∪y=y → 
+        (x ∪ y) ∪ x ∪ y   ≡⟨ assoc (x ∪ y) x y ⟩
+        ((x ∪ y) ∪ x) ∪ y ≡⟨ cong (_∪ y) (cong (_∪ x) (com x y)) ⟩
+        ((y ∪ x) ∪ x) ∪ y ≡⟨ cong (_∪ y) (sym (assoc y x x)) ⟩
+        (y ∪ x ∪ x) ∪ y   ≡⟨ cong (_∪ y) (cong (y ∪_) x∪x=x) ⟩
+        (y ∪ x) ∪ y       ≡⟨ cong (_∪ y) (com y x) ⟩
+        (x ∪ y) ∪ y       ≡⟨ sym (assoc x y y) ⟩
+        x ∪ y ∪ y         ≡⟨ cong (x ∪_) y∪y=y ⟩
+        x ∪ y             ∎
+

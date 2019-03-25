@@ -2,7 +2,7 @@
 
 module FiniteSets.Kuratowski.Properties where
 
-open import Cubical.Core.Everything hiding (_∨_)
+open import Cubical.Core.Everything
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism 
 open import Cubical.Data.Prod
@@ -10,8 +10,6 @@ open import Cubical.Data.Bool
 open import Cubical.Data.Sum
 open import Cubical.Data.Empty
 open import Cubical.Relation.Nullary
-
-
 
 open import FiniteSets.Kuratowski.Base
 
@@ -21,12 +19,12 @@ open import Cubical.Instance.Algebra.Semilattice.Properties
 
 private
   variable
-    ℓ ℓ' : Level
-    A B : Set ℓ
+    ℓ     : Level
+    A B X : Set ℓ
 
-KA-is-free : ∀ ⊥ _∨_ ⦃ _ : IsSemilattice B _∨_ ⊥ ⦄
-           → (A → B) → K A → B
-KA-is-free ⊥ _∨_ f = recK AisSet ⊥ f _∨_
+KA-is-free : ∀ ⊥ _⊔_ ⦃ _ : IsSemilattice B _⊔_ ⊥ ⦄
+           → (X → B) → K X → B
+KA-is-free ⊥ _⊔_ f = recK AisSet ⊥ f _⊔_
   ⊔-identityˡ ⊔-identityʳ (λ _ → ⊔-idem _) ⊔-assoc ⊔-comm
 
 [a]≢∅ : {a : A} → ¬ [ a ] ≡ ∅

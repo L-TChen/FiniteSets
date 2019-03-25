@@ -7,6 +7,7 @@ open import Cubical.Core.PropositionalTruncation
 open import Cubical.Foundations.HLevels 
 open import Cubical.Relation.Nullary
 
+open import Cubical.Instance
 open import Cubical.Instance.Algebra.Semilattice
 
 private
@@ -20,7 +21,6 @@ private
 infix 5 _∈_
 infix 5 _∉_
 infix 5 _⊆_
-infix 5 _≤_
 
 -- TODO: move this to SetTruncation module? 
 elimTrunc : (PSet : {x : A} → isSet (P x))
@@ -129,9 +129,6 @@ elim∈prop {P = P} PProp hereᴾ leftᴾ rightᴾ _ (sq a∈x a∈x₁ i) =
    toPathP {A = λ i → P (sq a∈x a∈x₁ i)} (PProp (transp (λ i → P (sq a∈x a∈x₁ i)) i0 (g a∈x)) (g a∈x₁)) i
     where g = elim∈prop PProp hereᴾ leftᴾ rightᴾ _
 
-_≤_ : {A : Set ℓ} → K A → K A → Set ℓ
-x ≤ y = x ∪ y ≡ y
-
 instance
   ∪-IsSemilattice : IsSemilattice (K A) _∪_ ∅
   ∪-IsSemilattice = record
@@ -154,3 +151,10 @@ instance
         x ∪ y ∪ y         ≡⟨ cong (x ∪_) y∪y=y ⟩
         x ∪ y             ∎
 
+KFreeSemilattice : Set ℓ → Semilattice ℓ 
+KFreeSemilattice A = record
+  { A   = K A
+  ; _⊔_ = _∪_
+  ; ⊥   = ∅
+  ; isSemilattice = it
+  }

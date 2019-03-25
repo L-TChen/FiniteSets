@@ -11,10 +11,11 @@ open import Cubical.Instance.Algebra.Semilattice
 
 private
   variable
-    ℓ ℓ' ℓ''  : Level
-    A : Set ℓ
-    B : Set ℓ'
-    C : Set ℓ''
+    ℓ     : Level
+    A B C : Set ℓ
+    P     : A → Set ℓ
+    x y   : A
+    p q   : x ≡ y
 
 infix 5 _∈_
 infix 5 _∉_
@@ -22,13 +23,12 @@ infix 5 _⊆_
 infix 5 _≤_
 
 -- TODO: move this to SetTruncation module? 
-elimTrunc : ∀ {P : A → Set ℓ}
-           → (PSet : {x : A} → isSet (P x))
-           → ∀ {x y} {p q : x ≡ y} (sq : p ≡ q)
+elimTrunc : (PSet : {x : A} → isSet (P x))
+           → ∀ (sq : p ≡ q)
            → ∀ Pxs Pys Pp Pq → PathP (λ i → PathP (λ j → P (sq i j)) Pxs Pys) Pp Pq
-elimTrunc {P = P} PSet {xs} {p = p} =
-  J (λ q sq → ∀ Pxs Pys Pp Pq → PathP (λ i → PathP (λ j → P (sq i j)) Pxs Pys) Pp Pq)
-    (J (λ ys (p : xs ≡ ys) → ∀ Pxs Pys → (Pp Pq : PathP (λ i → P (p i)) Pxs Pys) → Pp ≡ Pq) PSet p)
+elimTrunc {P = P} {x} {p = p} PSet =
+  J (λ q sq → ∀ Px Py Pp Pq → PathP (λ i → PathP (λ j → P (sq i j)) Px Py) Pp Pq)
+    (J (λ y (p : x ≡ y) → ∀ Px Py → (Pp Pq : PathP (λ i → P (p i)) Px Py) → Pp ≡ Pq) PSet p)
 
 data K (A : Set ℓ) : Set ℓ where
   ∅     : K A
@@ -42,8 +42,7 @@ data K (A : Set ℓ) : Set ℓ where
   trunc : (x y : K A) → (p q : x ≡ y) → p ≡ q
 infixr 10 _∪_
 
-elimK : ∀ {P : K A → Set ℓ}
-      → (PSet : {x : K A} → isSet (P x))
+elimK : (PSet : {x : K A} → isSet (P x))
       → (z    : P ∅)
       → (s    : (a : A) → P [ a ])
       → (f : (x y : K A) → P x → P y → P (x ∪ y))
@@ -73,8 +72,7 @@ elimK {A = A} PSet z s f nlᴾ nrᴾ idemᴾ assocᴾ comᴾ (trunc x y p q i j)
   elimTrunc {A = K A} PSet (trunc x y p q) (g x) (g y) (cong g p) (cong g q) i j
   where g = elimK PSet z s f nlᴾ nrᴾ idemᴾ assocᴾ comᴾ
 
-elimKprop : ∀ {P : K A → Set ℓ}
-      → (PProp : {x : K A} → isProp (P x))
+elimKprop : (PProp : {x : K A} → isProp (P x))
       → (z    : P ∅)
       → (s    : (a : A) → P [ a ])
       → (f : (x y : K A) → P x → P y → P (x ∪ y))
@@ -137,12 +135,12 @@ x ≤ y = x ∪ y ≡ y
 instance
   ∪-IsSemilattice : IsSemilattice (K A) _∪_ ∅
   ∪-IsSemilattice = record
-    { Aset = trunc
-    ; identityˡ     = nl
-    ; identityʳ     = nr
-    ; idempotency   = ∪-idem
-    ; associativity = assoc
-    ; commutativity = com
+    { AisSet      = trunc
+    ; ⊔-identityˡ = nl
+    ; ⊔-identityʳ = nr
+    ; ⊔-idem      = ∪-idem
+    ; ⊔-assoc     = assoc
+    ; ⊔-comm      = com
     }
     where
       ∪-idem : (x : K A) → x ∪ x ≡ x

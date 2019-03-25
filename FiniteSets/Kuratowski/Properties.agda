@@ -24,8 +24,8 @@ private
 
 KA-is-free : ∀ ⊥ _∨_ ⦃ _ : IsSemilattice B _∨_ ⊥ ⦄
            → (A → B) → K A → B
-KA-is-free ⊥ _∨_ f = recK Aset ⊥ f _∨_
-  identityˡ identityʳ (λ _ → idempotency _) associativity commutativity
+KA-is-free ⊥ _∨_ f = recK AisSet ⊥ f _∨_
+  ⊔-identityˡ ⊔-identityʳ (λ _ → ⊔-idem _) ⊔-assoc ⊔-comm
 
 [a]≢∅ : {a : A} → ¬ [ a ] ≡ ∅
 [a]≢∅ p = true≢false (cong (KA-is-free false _or_ (λ _ → true)) p)
@@ -35,7 +35,7 @@ KA-is-free ⊥ _∨_ f = recK Aset ⊥ f _∨_
 -- ≤ coincides with the algebraic ordering with respect to the monoid structure.
 
 ≤-refl : (x : K A) → x ≤ x
-≤-refl = idempotency
+≤-refl = ⊔-idem
 
 ≤-antisym : (x y : K A) → x ≤ y → y ≤ x → x ≡ y
 ≤-antisym x y x≤y y≤x =
@@ -59,7 +59,7 @@ KA-is-free ⊥ _∨_ f = recK Aset ⊥ f _∨_
 ≤-isAlgOrder x y z p =
   x ∪ y       ≡⟨ cong (x ∪_) (sym p) ⟩
   x ∪ x ∪ z   ≡⟨ assoc _ _ _ ⟩
-  (x ∪ x) ∪ z ≡⟨ cong (_∪ z) (idempotency _) ⟩
+  (x ∪ x) ∪ z ≡⟨ cong (_∪ z) (⊔-idem _) ⟩
   x ∪ z       ≡⟨ p ⟩
   y           ∎
   
@@ -69,7 +69,7 @@ KA-is-free ⊥ _∨_ f = recK Aset ⊥ f _∨_
 ∪-sup₁ : (x y : K A) → x ≤ x ∪ y
 ∪-sup₁ x y =
   x ∪ x ∪ y   ≡⟨ assoc _ _ _ ⟩
-  (x ∪ x) ∪ y ≡⟨ cong (_∪ y) (idempotency _) ⟩
+  (x ∪ x) ∪ y ≡⟨ cong (_∪ y) (⊔-idem _) ⟩
   x ∪ y       ∎ 
 
 ∪-sup₂ : (x y z : K A) → x ≤ z → y ≤ z → x ∪ y ≤ z
@@ -88,11 +88,11 @@ KA-is-free ⊥ _∨_ f = recK Aset ⊥ f _∨_
 
 ∪-conicalˡ : (x y : K A) → x ∪ y ≡ ∅ → x ≡ ∅
 ∪-conicalˡ x y x∪y≡∅ =
-  ≤-antisym x ∅ (≤-isAlgOrder _ _ y x∪y≡∅) (identityˡ x)
+  ≤-antisym x ∅ (≤-isAlgOrder _ _ y x∪y≡∅) (⊔-identityˡ x)
 
 ∪-conicalʳ : (x y : K A) → x ∪ y ≡ ∅ → y ≡ ∅
 ∪-conicalʳ x y x∪y≡∅ =
-  ≤-antisym _ _ (≤-isAlgOrder y ∅ x (subst (_≡ ∅) (com x y) x∪y≡∅)) (identityˡ y ) 
+  ≤-antisym _ _ (≤-isAlgOrder y ∅ x (subst (_≡ ∅) (com x y) x∪y≡∅)) (⊔-identityˡ y ) 
 
 --------------------------------------------------------------------------------
 -- a ∉ ∅

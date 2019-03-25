@@ -1,4 +1,4 @@
-{-# OPTIONS --safe --cubical  --without-K #-}
+{-# OPTIONS --cubical #-}
 
 module FiniteSets.Kuratowski.Decidable.Base where
 
@@ -16,9 +16,7 @@ private
   variable
     ℓ   : Level
 
-module DecMembership (A : Set ℓ) (_≟_ : (x y : A) → Dec (x ≡ y)) where
-
-module MereDecMembership (A : Set ℓ) (_≟_ : (x y : A) → Dec ∥ x ≡ y ∥) where
+module DecMembership (A : Set ℓ) (_≟_ : (x y : A) → Dec ∥ x ≡ y ∥) where
   _∈?_ : (a : A) → (x : K A) → Dec ∥ a ∈ x ∥
   _∈?_ a = elimKprop (isPropDec squash)
     (no (elimPropTrunc (λ _ → isProp⊥) (a∉∅ _)))

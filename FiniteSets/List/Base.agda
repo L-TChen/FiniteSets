@@ -3,7 +3,7 @@
 module FiniteSets.List.Base where
 
 open import Cubical.Core.Everything
-open import Cubical.Foundations.HLevels
+open import Cubical.HITs.SetTruncation
 
 open import Cubical.Relation.Nullary
 
@@ -11,14 +11,6 @@ private
   variable
     ℓ   : Level
     A B : Set ℓ
-
-elimTrunc : ∀ {P : A → Set ℓ}
-           → (PSet : (x : A) → isSet (P x))
-           → ∀ {x y} {p q : x ≡ y} (sq : p ≡ q)
-           → ∀ Px Py Pp Pq → PathP (λ i → PathP (λ j → P (sq i j)) Px Py) Pp Pq
-elimTrunc {P = P} PSet {x} {p = p} =
-  J (λ q sq → ∀ Px Py Pp Pq → PathP (λ i → PathP (λ j → P (sq i j)) Px Py) Pp Pq)
-    (J (λ y (p : x ≡ y) → ∀ Px Py → (Pp Pq : PathP (λ i → P (p i)) Px Py) → Pp ≡ Pq) (PSet x) p)
 
 data L (A : Set ℓ) : Set ℓ where
   []    : L A
@@ -44,7 +36,7 @@ elimL PSet z f fdup fcom (x ∷ xs) = f x xs (elimL PSet z f fdup fcom xs)
 elimL {P = P} PSet z f fdup fcom (dup a xs i)  = fdup a xs (elimL PSet z f fdup fcom xs) i 
 elimL PSet z f fdup fcom (com a b xs i)        = fcom a b xs (elimL PSet z f fdup fcom xs) i
 elimL {A = A} PSet z f fdup fcom (trunc xs ys p q i j) =
-  elimTrunc {A = L A} (\ xs → PSet {xs}) (trunc xs ys p q) (g xs) (g ys) (cong g p) (cong g q) i j
+  elimSquash₀ {A = L A} (\ xs → PSet {xs}) (trunc xs ys p q) (g xs) (g ys) (cong g p) (cong g q) i j
   where g = elimL PSet z f fdup fcom
 
 elimLprop : ∀  {P : L A → Set ℓ}
@@ -80,6 +72,3 @@ a ∉ xs = ¬ (a ∈ xs)
 
 infix 5 _∈_
 infix 5 _∉_
-
--- infix 5 _⊆_
--- infix 5 _≤_

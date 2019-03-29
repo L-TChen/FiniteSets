@@ -62,51 +62,51 @@ KPropRec f = KIsFree hProp-Semilattice f
 []-injective : {A : Set} {a b : A} → [ a ] ≡ [ b ] → ∥ a ≡ b ∥
 []-injective {a = a} eq = subst (fst ∘ KPropRec (λ b → a L.≡ₘ b)) eq ∣ refl ∣   
 
--- module _ {A : Set} where
---   open Properties 
+module _ {A : Set} where
+  open Properties (K-Semilattice A)
 
--- --------------------------------------------------------------------------------
--- -- a ∉ ∅
+--------------------------------------------------------------------------------
+-- a ∉ ∅
 
---   a∉∅ : (a : A) → a ∉ ∅
---   a∉∅ a = lem refl
---     where
---       lem : ∀ {x} → x ≡ ∅ → a ∉ x
---       lem p here        = [a]≢∅ p
---       lem p (left a∈x)  = lem (⊔-conicalˡ _ _ p) a∈x
---       lem p (right a∈x) = lem (⊔-conicalʳ _ _ p) a∈x
---       lem p (sq a∈x a∈x₁ i) =
---         toPathP (isProp⊥ (transp (λ i → ⊥) i0 (g a∈x)) (g a∈x₁)) i
---           where g = lem p
+  a∉∅ : (a : A) → a ∉ ∅
+  a∉∅ a = lem refl
+    where
+      lem : ∀ {x} → x ≡ ∅ → a ∉ x
+      lem p here        = [a]≢∅ p
+      lem p (left a∈x)  = lem (⊔-conicalˡ _ _ p) a∈x
+      lem p (right a∈x) = lem (⊔-conicalʳ _ _ p) a∈x
+      lem p (sq a∈x a∈x₁ i) =
+        toPathP (isProp⊥ (transp (λ i → ⊥) i0 (g a∈x)) (g a∈x₁)) i
+          where g = lem p
         
---   a∈x⇒[x]∪x≡x : ∀ (a : A) x → a ∈ x → [ a ] ∪ x ≡ x
---   a∈x⇒[x]∪x≡x a = elim∈prop (trunc _ _) (idem a)
---     (λ x y a∈x a∪x≡x →
---       [ a ] ∪ x ∪ y   ≡⟨ assoc _ _ _ ⟩
---       ([ a ] ∪ x) ∪ y ≡⟨ cong (_∪ y) a∪x≡x ⟩
---       x ∪ y           ∎)
---     (λ x y a∈y a∪y≡y →
---       [ a ] ∪ x ∪ y   ≡⟨ cong ([ a ] ∪_) (com _ _) ⟩
---       [ a ] ∪ y ∪ x   ≡⟨ assoc _ _ _ ⟩
---       ([ a ] ∪ y) ∪ x ≡⟨ cong (_∪ x) a∪y≡y ⟩
---       y ∪ x           ≡⟨ com _ _ ⟩
---       x ∪ y           ∎)
+  a∈x⇒[x]∪x≡x : ∀ (a : A) x → a ∈ x → [ a ] ∪ x ≡ x
+  a∈x⇒[x]∪x≡x a = elim∈prop (trunc _ _) (idem a)
+    (λ x y a∈x a∪x≡x →
+      [ a ] ∪ x ∪ y   ≡⟨ assoc _ _ _ ⟩
+      ([ a ] ∪ x) ∪ y ≡⟨ cong (_∪ y) a∪x≡x ⟩
+      x ∪ y           ∎)
+    (λ x y a∈y a∪y≡y →
+      [ a ] ∪ x ∪ y   ≡⟨ cong ([ a ] ∪_) (com _ _) ⟩
+      [ a ] ∪ y ∪ x   ≡⟨ assoc _ _ _ ⟩
+      ([ a ] ∪ y) ∪ x ≡⟨ cong (_∪ x) a∪y≡y ⟩
+      y ∪ x           ≡⟨ com _ _ ⟩
+      x ∪ y           ∎)
 
---   y⊆x⇒y∪x≡x  : ∀ {x : K A} y → (y ⊆ x) → (y ∪ x) ≡ x
---   y⊆x⇒y∪x≡x {x = x} = elimKprop (λ p q → funExt λ f → trunc _ _ (p f) (q f))
---     (λ _ → nl _)
---     (λ a p → a∈x⇒[x]∪x≡x a _ (p a here) )
---     λ z y px py f →
---      (z ∪ y) ∪ x ≡⟨ sym (assoc _ _ _) ⟩
---      z ∪ y ∪ x   ≡⟨ cong (z ∪_) (py λ a a∈y → f a (right a∈y)) ⟩
---      z ∪ x       ≡⟨ px (λ a a∈z → f a (left a∈z) )  ⟩
---      x           ∎
+  y⊆x⇒y∪x≡x  : ∀ {x : K A} y → (y ⊆ x) → (y ∪ x) ≡ x
+  y⊆x⇒y∪x≡x {x = x} = elimKprop (λ p q → funExt λ f → trunc _ _ (p f) (q f))
+    (λ _ → nl _)
+    (λ a p → a∈x⇒[x]∪x≡x a _ (p a here) )
+    λ z y px py f →
+     (z ∪ y) ∪ x ≡⟨ sym (assoc _ _ _) ⟩
+     z ∪ y ∪ x   ≡⟨ cong (z ∪_) (py λ a a∈y → f a (right a∈y)) ⟩
+     z ∪ x       ≡⟨ px (λ a a∈z → f a (left a∈z) )  ⟩
+     x           ∎
 
---   y∪x≡x∧x∪y≡y : {x y : K A} → (y ∪ x ≡ x) × (x ∪ y ≡ y) → x ≡ y
---   y∪x≡x∧x∪y≡y (y∪x≡x , x∪y≡y) = ≤-antisym _ _ x∪y≡y y∪x≡x
+  y∪x≡x∧x∪y≡y : {x y : K A} → (y ∪ x ≡ x) × (x ∪ y ≡ y) → x ≡ y
+  y∪x≡x∧x∪y≡y (y∪x≡x , x∪y≡y) = ≤-antisym _ _ x∪y≡y y∪x≡x
 
--- setExt : {A : Set} {x y : K A}
---                 → Iso (x ≡ y) (∀ (a : A) → a ∈ x ≡ a ∈ y)
--- setExt {A = A} {x} {y} = {!!}
+setExt : {A : Set} {x y : K A}
+                → Iso (x ≡ y) (∀ (a : A) → a ∈ x ≡ a ∈ y)
+setExt {A = A} {x} {y} = {!!}
 
--- module Decidable (A : Set)(_≟_ : {A : Set} (x y : A) → Dec ∥ x ≡ y ∥) where
+module Decidable (A : Set)(_≟_ : {A : Set} (x y : A) → Dec ∥ x ≡ y ∥) where

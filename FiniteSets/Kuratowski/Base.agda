@@ -10,9 +10,6 @@ open import Cubical.Relation.Nullary
 
 open import Cubical.HITs.SetTruncation
 
-open import Cubical.Instance
-open import Cubical.Instance.Algebra.Semilattice
-
 private
   variable
     ℓ     : Level

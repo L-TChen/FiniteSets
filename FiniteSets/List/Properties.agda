@@ -5,9 +5,9 @@ module FiniteSets.List.Properties where
 open import Cubical.Core.Everything
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism
-open import Cubical.Data.Prod
-open import Level
+open import Cubical.Foundations.Function
 
+open import FiniteSets.Semilattice
 open import FiniteSets.List
 open import FiniteSets.Kuratowski as K renaming ([_] to K[_] ; trunc to trunck ; com to comk)
 
@@ -26,9 +26,6 @@ private
           → xs ++ ys ++ zs ≡ (xs ++ ys) ++ zs
 ++-assoc ys zs = elimLprop (trunc _ _) refl λ a xs p → cong (a ∷_) p 
 
-++-idem : (x : A) → [ x ] ++ [ x ] ≡ [ x ]
-++-idem x = dup x []
-
 [a]++xs≡xs++[a] : ∀ xs (a : A) → a ∷ xs ≡ xs ++ [ a ]
 [a]++xs≡xs++[a] = elimLprop (propPi (λ _ → trunc _ _)) (λ _ → refl) λ a xs pxs b →
   b ∷ a ∷ xs        ≡⟨ com _ _ _ ⟩
@@ -43,7 +40,29 @@ private
   (ys ++ xs) ++ [ a ] ≡⟨ sym (++-assoc _ _ ys) ⟩
   ys ++ xs ++ [ a ]   ≡⟨ cong (ys ++_) (sym ([a]++xs≡xs++[a] _ _)) ⟩
   ys ++ a ∷ xs        ∎
-  
+
+++-idem : (xs : L A) → xs ++ xs ≡ xs
+++-idem = elimLprop (trunc _ _) refl λ a xs pxs →
+  (a ∷ xs) ++ a ∷ xs ≡⟨ refl ⟩
+  a ∷ (xs ++ a ∷ xs) ≡⟨ cong (a ∷_) (++-comm xs (a ∷ xs)) ⟩
+  a ∷ a ∷ (xs ++ xs) ≡⟨ dup a _ ⟩
+  a ∷ xs ++ xs       ≡⟨ cong (a ∷_) pxs ⟩
+  a ∷ xs             ∎  
+
+L-Semilattice : Set ℓ → Semilattice ℓ 
+L-Semilattice A = record
+  { A = L A
+  ; _⊔_ = _++_
+  ; ⊥ = []
+  ; isSemilattice = record
+    { AisSet = trunc
+    ; ⊔-identityˡ = λ _ → refl
+    ; ⊔-identityʳ = ++-identityʳ
+    ; ⊔-idem = ++-idem
+    ; ⊔-assoc = λ xs ys zs → ++-assoc ys zs xs
+    ; ⊔-comm = ++-comm
+    } }
+    
 IsoKL : ∀ {ℓ} {A : Set ℓ} → Iso (K A) (L A)
 IsoKL {ℓ} {A} = iso f g f∘g=id g∘f=id
   where
@@ -51,7 +70,7 @@ IsoKL {ℓ} {A} = iso f g f∘g=id g∘f=id
     f = elimK trunc [] [_] (λ _ _ → _++_)
       (λ _ → ++-identityˡ)
       (λ _ → ++-identityʳ)
-      ++-idem
+      (++-idem ∘ [_])
       (λ _ _ _ xs ys zs → ++-assoc ys zs xs)
       (λ _ _ → ++-comm)
       

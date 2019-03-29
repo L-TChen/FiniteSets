@@ -15,71 +15,65 @@ private
   variable
     ℓ  : Level
     A  : Set ℓ
-    
-++-identityˡ : (xs : L A) → [] ++ xs ≡ xs
-++-identityˡ xs = refl
 
-++-identityʳ : (xs : L A) → xs ++ [] ≡ xs
-++-identityʳ = elimLprop (trunc _ _) refl (λ a _ p → (cong (a ∷_) p))
+module Lattice where 
+  ++-identityʳ : (xs : L A) → xs ++ [] ≡ xs
+  ++-identityʳ = elimLprop (trunc _ _) refl (λ a _ p → (cong (a ∷_) p))
 
-++-assoc : (ys zs xs : L A)
-          → xs ++ ys ++ zs ≡ (xs ++ ys) ++ zs
-++-assoc ys zs = elimLprop (trunc _ _) refl λ a xs p → cong (a ∷_) p 
+  ++-assoc : (ys zs xs : L A)
+            → xs ++ ys ++ zs ≡ (xs ++ ys) ++ zs
+  ++-assoc ys zs = elimLprop (trunc _ _) refl λ a xs p → cong (a ∷_) p 
 
-[a]++xs≡xs++[a] : ∀ xs (a : A) → a ∷ xs ≡ xs ++ [ a ]
-[a]++xs≡xs++[a] = elimLprop (propPi (λ _ → trunc _ _)) (λ _ → refl) λ a xs pxs b →
-  b ∷ a ∷ xs        ≡⟨ com _ _ _ ⟩
-  a ∷ b ∷ xs        ≡⟨ cong (a ∷_) (pxs b) ⟩
-  a ∷ (xs ++ [ b ]) ≡⟨ refl ⟩
-  a ∷ xs ++ [ b ]   ∎
-  
-++-comm : ∀ xs → (ys : L A) → xs ++ ys ≡ ys ++ xs
-++-comm = elimLprop (propPi (λ _ → trunc _ _)) (λ ys → sym (++-identityʳ ys)) λ a xs pxs ys →
-  a ∷ (xs ++ ys)      ≡⟨ cong (a ∷_) (pxs ys) ⟩
-  a ∷ (ys ++ xs)      ≡⟨ [a]++xs≡xs++[a] (ys ++ xs) a ⟩
-  (ys ++ xs) ++ [ a ] ≡⟨ sym (++-assoc _ _ ys) ⟩
-  ys ++ xs ++ [ a ]   ≡⟨ cong (ys ++_) (sym ([a]++xs≡xs++[a] _ _)) ⟩
-  ys ++ a ∷ xs        ∎
+  [a]++xs≡xs++[a] : ∀ xs (a : A) → a ∷ xs ≡ xs ++ [ a ]
+  [a]++xs≡xs++[a] = elimLprop (propPi (λ _ → trunc _ _)) (λ _ → refl) λ a xs pxs b →
+    b ∷ a ∷ xs        ≡⟨ com _ _ _ ⟩
+    a ∷ b ∷ xs        ≡⟨ cong (a ∷_) (pxs b) ⟩
+    a ∷ (xs ++ [ b ]) ≡⟨ refl ⟩
+    a ∷ xs ++ [ b ]   ∎
 
-++-idem : (xs : L A) → xs ++ xs ≡ xs
-++-idem = elimLprop (trunc _ _) refl λ a xs pxs →
-  (a ∷ xs) ++ a ∷ xs ≡⟨ refl ⟩
-  a ∷ (xs ++ a ∷ xs) ≡⟨ cong (a ∷_) (++-comm xs (a ∷ xs)) ⟩
-  a ∷ a ∷ (xs ++ xs) ≡⟨ dup a _ ⟩
-  a ∷ xs ++ xs       ≡⟨ cong (a ∷_) pxs ⟩
-  a ∷ xs             ∎  
+  ++-comm : ∀ xs → (ys : L A) → xs ++ ys ≡ ys ++ xs
+  ++-comm = elimLprop (propPi (λ _ → trunc _ _)) (λ ys → sym (++-identityʳ ys)) λ a xs pxs ys →
+    a ∷ (xs ++ ys)      ≡⟨ cong (a ∷_) (pxs ys) ⟩
+    a ∷ (ys ++ xs)      ≡⟨ [a]++xs≡xs++[a] (ys ++ xs) a ⟩
+    (ys ++ xs) ++ [ a ] ≡⟨ sym (++-assoc _ _ ys) ⟩
+    ys ++ xs ++ [ a ]   ≡⟨ cong (ys ++_) (sym ([a]++xs≡xs++[a] _ _)) ⟩
+    ys ++ a ∷ xs        ∎
 
-L-Semilattice : Set ℓ → Semilattice ℓ 
-L-Semilattice A = record
-  { A = L A
-  ; _⊔_ = _++_
-  ; ⊥ = []
-  ; isSemilattice = record
-    { AisSet = trunc
-    ; ⊔-identityˡ = λ _ → refl
-    ; ⊔-identityʳ = ++-identityʳ
-    ; ⊔-idem = ++-idem
-    ; ⊔-assoc = λ xs ys zs → ++-assoc ys zs xs
-    ; ⊔-comm = ++-comm
-    } }
-    
-IsoKL : ∀ {ℓ} {A : Set ℓ} → Iso (K A) (L A)
-IsoKL {ℓ} {A} = iso f g f∘g=id g∘f=id
+  ++-idem : (xs : L A) → xs ++ xs ≡ xs
+  ++-idem = elimLprop (trunc _ _) refl λ a xs pxs →
+    (a ∷ xs) ++ a ∷ xs ≡⟨ refl ⟩
+    a ∷ (xs ++ a ∷ xs) ≡⟨ cong (a ∷_) (++-comm xs (a ∷ xs)) ⟩
+    a ∷ a ∷ (xs ++ xs) ≡⟨ dup a _ ⟩
+    a ∷ xs ++ xs       ≡⟨ cong (a ∷_) pxs ⟩
+    a ∷ xs             ∎
+
+  L-Semilattice : Set ℓ → Semilattice ℓ 
+  L-Semilattice A = record
+    { A = L A
+    ; _⊔_ = _++_
+    ; ⊥ = []
+    ; isSemilattice = record
+      { AisSet = trunc
+      ; ⊔-identityˡ = λ _ → refl
+      ; ⊔-identityʳ = ++-identityʳ
+      ; ⊔-idem = ++-idem
+      ; ⊔-assoc = λ xs ys zs → ++-assoc ys zs xs
+      ; ⊔-comm = ++-comm
+      } }
+open Lattice using (L-Semilattice)
+
+K≡L : (A : Set ℓ) → K A ≡ L A
+K≡L A = isoToPath (iso f g f∘g=id g∘f=id)
   where
     f : K A → L A
-    f = elimK trunc [] [_] (λ _ _ → _++_)
-      (λ _ → ++-identityˡ)
-      (λ _ → ++-identityʳ)
-      (++-idem ∘ [_])
-      (λ _ _ _ xs ys zs → ++-assoc ys zs xs)
-      (λ _ _ → ++-comm)
+    f = recK trunc [] [_] _⊔_ ⊔-identityˡ ⊔-identityʳ (⊔-idem ∘ [_]) ⊔-assoc ⊔-comm
+      where open Semilattice (L-Semilattice A)
       
     g : L A → K A
-    g = elimL trunck ∅
-      (λ a _ x → K[ a ] ∪ x)
-      (λ a   _ x → assoc _ _ _ ∙ cong (_∪ x) (idem a))
-      (λ a b _ x → assoc _ _ _ ∙ cong (_∪ x) (comk _ _) ∙ sym (assoc _ _ _))
-
+    g = recL trunck ∅ (λ a x → K[ a ] ∪ x)
+      (λ a x   → assoc _ _ _ ∙ cong (_∪ x) (idem a))
+      (λ a b x → assoc _ _ _ ∙ cong (_∪ x) (comk _ _) ∙ sym (assoc _ _ _))
+ 
     g-homo : ∀ xs ys → g (xs ++ ys) ≡ g xs ∪ g ys
     g-homo = elimLprop (propPi λ _ → trunck _ _) (λ ys → sym (nl (g ys)))
       λ a xs f ys →

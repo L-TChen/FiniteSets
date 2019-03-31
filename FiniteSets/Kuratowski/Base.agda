@@ -4,8 +4,8 @@ module FiniteSets.Kuratowski.Base where
 
 open import Cubical.Core.Prelude 
 open import Cubical.Core.PropositionalTruncation
-open import Cubical.Core.PropositionalTruncation
-open import Cubical.Foundations.HLevels 
+--open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.Logic hiding ([_]) renaming (¬_ to L¬_)
 open import Cubical.Relation.Nullary
 
 open import Cubical.HITs.SetTruncation
@@ -18,9 +18,11 @@ private
     x y   : A
     p q   : x ≡ y
 
-infix 5 _∈_
-infix 5 _∉_
-infix 5 _⊆_
+infix 6 _∈′_
+infix 6 _∈_
+infix 6 _∉_
+infix 6 _∉′_
+infix 7 _⊆_
 
 data K (A : Set ℓ) : Set ℓ where
   ∅     : K A
@@ -31,7 +33,7 @@ data K (A : Set ℓ) : Set ℓ where
   idem  : ∀ a → [ a ] ∪ [ a ] ≡ [ a ]
   assoc : ∀ x y z → x ∪ (y ∪ z) ≡ (x ∪ y) ∪ z
   com   : ∀ x y → x ∪ y ≡ y ∪ x
-  trunc : (x y : K A) → (p q : x ≡ y) → p ≡ q
+  trunc : isSet (K A)
 infixr 10 _∪_
 
 elimK : (PSet : {x : K A} → isSet (P x))
@@ -90,33 +92,53 @@ recK : isSet B
      → K A → B  
 recK Bset z ins f nlᴮ nrᴮ idemᴮ assocᴮ comᴮ = elimK Bset z ins
   (λ _ _ → f) (λ _ → nlᴮ) (λ _ → nrᴮ) idemᴮ  (λ _ _ _ → assocᴮ) λ _ _ → comᴮ             
+--------------------------------------------------------------------------------
+-- A mere identity 
+infix 5 _≡ₖ_
+
+_≡ₖ_ : K A → K A → hProp
+x ≡ₖ y = (x ≡ y) , trunc x y
+
+_≢ₖ_ : K A → K A → hProp
+x ≢ₖ y = L¬ (x ≡ₖ y)
 
 --------------------------------------------------------------------------------
 -- Membership relation
 
-data _∈_ {A : Set ℓ} (a : A) : K A → Set ℓ where
-  here  : a ∈ [ a ]
-  left  : ∀ {x y} → (a∈x : a ∈ x) → a ∈ x ∪ y
-  right : ∀ {x y} → (a∈y : a ∈ y) → a ∈ x ∪ y
-  sq    : ∀ {x}   → (p q : a ∈ x) → p ≡ q
+data _∈′_ {A : Set ℓ} (a : A) : (x : K A) → Set ℓ where
+  here  : a ∈′ [ a ]
+  left  : ∀ {x y} → (a∈x : a ∈′ x) → a ∈′ x ∪ y
+  right : ∀ {x y} → (a∈y : a ∈′ y) → a ∈′ x ∪ y
+  sq    : ∀ {x}   → (p q : a ∈′ x) → p ≡ q
 
-_∉_ : {A : Set ℓ} → A → K A → Set ℓ
-a ∉ x = ¬ (a ∈ x)
+_∉′_ : {A : Set ℓ} → A → K A → Set ℓ
+a ∉′ x = ¬ (a ∈′ x)
 
-_⊆_ : {A : Set ℓ} → K A → K A → Set ℓ
-_⊆_ {A = A} x y = ∀ (a : A) → a ∈ x → a ∈ y
+_⊆′_ : {A : Set ℓ} → K A → K A → Set ℓ
+_⊆′_ {A = A} x y = ∀ (a : A) → a ∈′ x → a ∈′ y
 
-elim∈prop : ∀ {a : A} {P : ∀ {x} → a ∈ x → Set ℓ}
-          → (PProp : ∀ {x} {p : a ∈ x} → isProp (P p))
-          → P here
-          → (∀ x y (a∈x : a ∈ x) → P a∈x → P (left  {y = y} a∈x))
-          → (∀ x y (a∈y : a ∈ y) → P a∈y → P (right {x = x} a∈y))
-          → ∀ x (a∈x : a ∈ x) → P a∈x
-elim∈prop PProp hereᴾ leftᴾ rightᴾ _ here                = hereᴾ
-elim∈prop PProp hereᴾ leftᴾ rightᴾ _ (left {x} {y}  a∈x) = leftᴾ x y a∈x (g a∈x)
-  where g = elim∈prop PProp hereᴾ leftᴾ rightᴾ _
-elim∈prop PProp hereᴾ leftᴾ rightᴾ _ (right {x} {y} a∈x) = rightᴾ x y a∈x (g a∈x)
-  where g = elim∈prop PProp hereᴾ leftᴾ rightᴾ _
-elim∈prop {P = P} PProp hereᴾ leftᴾ rightᴾ _ (sq a∈x a∈x₁ i) =
-   toPathP {A = λ i → P (sq a∈x a∈x₁ i)} (PProp (transp (λ i → P (sq a∈x a∈x₁ i)) i0 (g a∈x)) (g a∈x₁)) i
-    where g = elim∈prop PProp hereᴾ leftᴾ rightᴾ _
+_∈_ : (a : A) → K A → hProp
+a ∈ x = a ∈′ x , sq
+
+_∉_ : (a : A) → K A → hProp
+a ∉ x = L¬ (a ∈ x)
+
+_⊆_ : K A → K A → hProp
+x ⊆ y = ∀[ a ∶ _ ] a ∈ x ⇒ a ∈ y
+      
+elim∈prop : {a : A} → ∀ {P : ∀ {x} → a ∈′ x → Set ℓ}
+          → (PProp : ∀ {x} {p : a ∈′ x} → isProp (P p))
+          → (P here)
+          → (∀ x y → (a∈′x : a ∈′ x) → P a∈′x → P (left  {y = y} a∈′x))
+          → (∀ x y → (a∈′y : a ∈′ y) → P a∈′y → P (right {x = x} a∈′y))
+          → ∀ x (a∈′x : a ∈′ x) → P a∈′x
+elim∈prop PProp hereᴾ leftᴾ rightᴾ ._ here = hereᴾ
+elim∈prop PProp hereᴾ leftᴾ rightᴾ .(_ ∪ _) (left {x} {y} a∈x) =
+  leftᴾ x y a∈x (g x a∈x)
+  where g = elim∈prop PProp hereᴾ leftᴾ rightᴾ
+elim∈prop PProp hereᴾ leftᴾ rightᴾ .(_ ∪ _) (right {x} {y} a∈y) =
+  rightᴾ x y a∈y (g y a∈y)
+  where g = elim∈prop PProp hereᴾ leftᴾ rightᴾ
+elim∈prop {P = P} PProp hereᴾ leftᴾ rightᴾ x (sq a∈x a∈x′ i) = toPathP {A = λ i → P (sq a∈x a∈x′ i)}
+  (PProp (transp (λ i → P (sq a∈x a∈x′ i)) i0 (g x a∈x)) (g x a∈x′)) i
+  where g = elim∈prop PProp hereᴾ leftᴾ rightᴾ

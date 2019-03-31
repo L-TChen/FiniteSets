@@ -17,7 +17,7 @@ data L (A : Set ℓ) : Set ℓ where
   _∷_   : A → L A → L A
   dup   : ∀ a xs   → a ∷ a ∷ xs ≡ a ∷ xs
   com   : ∀ a b xs → a ∷ b ∷ xs ≡ b ∷ a ∷ xs
-  trunc : ∀ (xs ys : L A) → (p q : xs ≡ ys) → p ≡ q
+  trunc : isSet (L A)
 infixr 10 _∷_
 
 pattern [_] a = a ∷ []
@@ -69,6 +69,7 @@ data _∈_ {A : Set ℓ} (a : A) : L A → Set ℓ where
 
 _∉_ : {A : Set ℓ} → A → L A → Set ℓ
 a ∉ xs = ¬ (a ∈ xs)
+
 
 infix 5 _∈_
 infix 5 _∉_

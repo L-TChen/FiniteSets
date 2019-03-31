@@ -72,8 +72,8 @@ module Properties {ℓ} (L : Semilattice ℓ) where
   ≤-refl : (x : A) → x ≤ x
   ≤-refl = ⊔-idem
 
-  ≤-antisym : (x y : A) → x ≤ y → y ≤ x → x ≡ y
-  ≤-antisym x y x≤y y≤x =
+  ≤-antisym : {x y : A} → x ≤ y → y ≤ x → x ≡ y
+  ≤-antisym {x = x} {y} x≤y y≤x =
     x     ≡⟨ sym y≤x ⟩
     y ⊔ x ≡⟨ ⊔-comm _ _ ⟩
     x ⊔ y ≡⟨ x≤y ⟩
@@ -122,7 +122,7 @@ module Properties {ℓ} (L : Semilattice ℓ) where
 
   ⊔-conicalˡ : (x y : A) → x ⊔ y ≡ ⊥ → x ≡ ⊥
   ⊔-conicalˡ x y x⊔y≡⊥ =
-    ≤-antisym x ⊥ (≤-isAlgOrder _ _ y x⊔y≡⊥) (⊔-identityˡ x)
+    ≤-antisym (≤-isAlgOrder _ _ y x⊔y≡⊥) (⊔-identityˡ x)
 
   ⊔-conicalʳ : (x y : A) → x ⊔ y ≡ ⊥ → y ≡ ⊥
   ⊔-conicalʳ x y x⊔y≡⊥ = ⊔-conicalˡ y x (subst (λ z → z ≡ ⊥) (⊔-comm x y) x⊔y≡⊥)

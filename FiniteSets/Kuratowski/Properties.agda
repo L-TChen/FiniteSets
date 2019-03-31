@@ -13,6 +13,8 @@ open import Cubical.Data.Prod
 open import Cubical.Data.Bool
 open import Cubical.Data.Empty 
 
+open import Cubical.Relation.Nullary
+
 open import FiniteSets.Kuratowski.Base renaming ([_] to K[_])
 
 open import FiniteSets.Semilattice
@@ -122,10 +124,12 @@ module _ {A : Set} where
   setExt {x} {y} =
     x ≡ₖ y                      ≡⟨ sym (y∪x≡x∧x∪y≡y) ⟩
     (y ∪ x ≡ₖ x) ⊓ (x ∪ y ≡ₖ y) ≡⟨ cong₂ (_⊓_) (sym y⊆x⇒y∪x≡x) (sym y⊆x⇒y∪x≡x)  ⟩
-    (y ⊆ x) ⊓ (x ⊆ y)           ≡⟨ cong₂ (_⊓_) (hProp≡ refl) (hProp≡ refl) ⟩ 
+    (y ⊆ x) ⊓ (x ⊆ y)           ≡⟨ cong₂ {x = y ⊆ x} {y = ∀[ a ∶ A ] a ∈ y ⇒ a ∈ x} _⊓_ refl {u = x ⊆ y} {v = ∀[ a ∶ A ] a ∈ x ⇒ a ∈ y} refl ⟩
     (∀[ a ∶ A ] a ∈ y ⇒ a ∈ x) ⊓ (∀[ a ∶ A ] a ∈ x ⇒ a ∈ y)
       ≡⟨ ⊓-∀-comm (λ a → a ∈ y ⇒ a ∈ x) (λ a → a ∈ x ⇒ a ∈ y) ⟩
     (∀[ a ∶ A ] (a ∈ y ⇒ a ∈ x) ⊓ (a ∈ x ⇒ a ∈ y)) ≡⟨ hProp≡ refl ⟩ 
-    (∀[ a ∶ A ] (a ∈ y ⇔ a ∈ x))                   ∎ 
+    (∀[ a ∶ A ] (a ∈ y ⇔ a ∈ x))                   ∎
+    where ℓ-one = ℓ-suc ℓ-zero
 
--- module Decidable (A : Set)(_≟_ : {A : Set} (x y : A) → Dec ∥ x ≡ y ∥) where
+
+  module Decidable (A : Set)(_≟_ : {A : Set} (x y : A) → Dec [ x ≡ₘ y ]) where

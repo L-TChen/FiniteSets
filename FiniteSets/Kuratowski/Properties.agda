@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical --allow-unsolved-metas #-}
+{-# OPTIONS --cubical --safe #-}
 
 module FiniteSets.Kuratowski.Properties where
 

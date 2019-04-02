@@ -4,9 +4,10 @@ module FiniteSets.Kuratowski.Base where
 
 open import Cubical.Core.Prelude 
 open import Cubical.Core.PropositionalTruncation
+open import Cubical.Data.Sum
 --open import Cubical.Foundations.HLevels
-open import Cubical.Foundations.Logic hiding ([_]) renaming (¬_ to L¬_)
-open import Cubical.Relation.Nullary
+import Cubical.Foundations.Logic as L
+--open import Cubical.Relation.Nullary
 
 open import Cubical.HITs.SetTruncation
 
@@ -21,7 +22,7 @@ private
 infix 6 _∈′_
 infix 6 _∈_
 infix 6 _∉_
-infix 6 _∉′_
+--infix 6 _∉′_
 infix 7 _⊆_
 
 data K (A : Set ℓ) : Set ℓ where
@@ -93,6 +94,22 @@ recK : isSet B
 recK Bset z ins f nlᴮ nrᴮ idemᴮ assocᴮ comᴮ = elimK Bset z ins
   (λ _ _ → f) (λ _ → nlᴮ) (λ _ → nrᴮ) idemᴮ  (λ _ _ _ → assocᴮ) λ _ _ → comᴮ             
 --------------------------------------------------------------------------------
+--
+module _ where
+  open import FiniteSets.Semilattice
+
+  KIsFree : (L : Semilattice ℓ) → (A → Semilattice.A L) → K A → (Semilattice.A L)
+  KIsFree L f = recK AisSet (Semilattice.⊥ L) f _⊔_
+    ⊔-identityˡ ⊔-identityʳ (λ _ → ⊔-idem _) ⊔-assoc ⊔-comm
+    where open Semilattice L
+
+  KPropRec : (A → L.hProp) → (a : K A) → L.hProp
+  KPropRec f = KIsFree hProp-Semilattice f
+    where open hProp
+
+--------------------------------------------------------------------------------
+-- Properties (Mere propositions)
+open L hiding ([_])
 -- A mere identity 
 infix 5 _≡ₖ_
 
@@ -100,7 +117,7 @@ _≡ₖ_ : K A → K A → hProp
 x ≡ₖ y = (x ≡ y) , trunc x y
 
 _≢ₖ_ : K A → K A → hProp
-x ≢ₖ y = L¬ (x ≡ₖ y)
+x ≢ₖ y = ¬ (x ≡ₖ y)
 
 --------------------------------------------------------------------------------
 -- Membership relation
@@ -110,18 +127,12 @@ data _∈′_ {A : Set ℓ} (a : A) : (x : K A) → Set ℓ where
   left  : ∀ {x y} → (a∈x : a ∈′ x) → a ∈′ x ∪ y
   right : ∀ {x y} → (a∈y : a ∈′ y) → a ∈′ x ∪ y
   sq    : ∀ {x}   → (p q : a ∈′ x) → p ≡ q
-
-_∉′_ : {A : Set ℓ} → A → K A → Set ℓ
-a ∉′ x = ¬ (a ∈′ x)
-
-_⊆′_ : {A : Set ℓ} → K A → K A → Set ℓ
-_⊆′_ {A = A} x y = ∀ (a : A) → a ∈′ x → a ∈′ y
-
+  
 _∈_ : (a : A) → K A → hProp
 a ∈ x = a ∈′ x , sq
 
 _∉_ : (a : A) → K A → hProp
-a ∉ x = L¬ (a ∈ x)
+a ∉ x = ¬ (a ∈ x)
 
 _⊆_ : K A → K A → hProp
 x ⊆ y = ∀[ a ∶ _ ] a ∈ x ⇒ a ∈ y
@@ -142,3 +153,8 @@ elim∈prop PProp hereᴾ leftᴾ rightᴾ .(_ ∪ _) (right {x} {y} a∈y) =
 elim∈prop {P = P} PProp hereᴾ leftᴾ rightᴾ x (sq a∈x a∈x′ i) = toPathP {A = λ i → P (sq a∈x a∈x′ i)}
   (PProp (transp (λ i → P (sq a∈x a∈x′ i)) i0 (g x a∈x)) (g x a∈x′)) i
   where g = elim∈prop PProp hereᴾ leftᴾ rightᴾ
+
+-- An alternative definition `a ∈ x` of membership relation defined by
+-- recursion on the finite set x.
+_∈ₚ_ : {A : Set (ℓ-zero)} (a : A) → K A → hProp {ℓ-zero}
+a ∈ₚ x = KPropRec (λ c → a ≡ₘ c) x

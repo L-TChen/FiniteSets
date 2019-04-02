@@ -10,6 +10,7 @@ open import Cubical.Foundations.Function
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
 open import Cubical.Data.Prod
+open import Cubical.Data.Sum
 open import Cubical.Data.Bool
 open import Cubical.Data.Empty 
 
@@ -22,7 +23,7 @@ open import FiniteSets.Semilattice
 private
   variable
     ℓ     : Level
-    A B X : Set ℓ
+    X : Set ℓ
 
 KAisSet : isSet (K X)
 KAisSet = trunc
@@ -54,43 +55,51 @@ module Lattice where
     }
 open Lattice using (KSemilattice)
 
-KIsFree : (L : Semilattice ℓ) → (X → Semilattice.A L) → K X → (Semilattice.A L)
-KIsFree L f = recK AisSet (Semilattice.⊥ L) f _⊔_
-  ⊔-identityˡ ⊔-identityʳ (λ _ → ⊔-idem _) ⊔-assoc ⊔-comm
-  where open Semilattice L
-
-KPropRec : (X → hProp) → (a : K X) → hProp
-KPropRec f = KIsFree hProp-Semilattice f
-  where open hProp
-
 module _ {A : Set} where
   open L
+  open Properties (KSemilattice A)
+    
   [a]≢∅ : {a : A} → [ K.[ a ] ≢ₖ ∅ ]
   [a]≢∅ p = subst (fst ∘ KPropRec (λ a → (K.[ a ] ≡ ∅) , trunc _ _)) p p
 
+  
   []-injective : {A : Set} {a b : A} → K.[ a ] ≡ₖ K.[ b ] ≡ a ≡ₘ b 
   []-injective {a = a} {b} =
     ⇒∶ (λ eq → subst (fst ∘ KPropRec (λ b → a L.≡ₘ b)) eq ∣ refl ∣)
     ⇐∶ elimPropTrunc (λ _ → trunc K[ a ] K[ b ]) (cong K[_])
 
-  open Properties (KSemilattice A)
+  ∈⇒∈ₚ : ∀ {a : A} {x} → [ a ∈ x ⇒ a ∈ₚ x ]
+  ∈⇒∈ₚ {a = a} {x = x} a∈x = elim∈prop {P = λ {y} _ → [ a ∈ₚ y ]}
+    (λ {y} → snd (a ∈ₚ y)) ∣ refl ∣
+    (λ _ _ _ → L.inl) (λ _ _ _ → L.inr) x a∈x
+    
+  ∈ₚ⇒∈ : ∀ {a} {x : K A} → [ a ∈ₚ x ⇒ a ∈ x ]
+  ∈ₚ⇒∈ {a} {x} a∈x = elimKprop {P = λ y → [ (a ∈ₚ y) ⇒ a ∈ y ]} (propPi λ _ → snd (a ∈ _))
+    (λ ()) (λ b a≡b → substₘ (λ c → a ∈ K[ c ]) a≡b here)
+    (λ y z py pz pyz → elimPropTrunc (λ _ → sq)
+      (elim-⊎ (λ a∈y → left (py a∈y)) λ a∈z → right (pz a∈z)) pyz) x a∈x
 
+  ∈≡∈ₚ : ∀ {a : A}{x : K A} → a ∈ x ≡ a ∈ₚ x
+  ∈≡∈ₚ = ⇔toPath ∈⇒∈ₚ ∈ₚ⇒∈
+
+  a∈[b]⇒a≡b : ∀ (a b : A) → (a ∈ K.[ b ]) ≡ (a ≡ₘ b)
+  a∈[b]⇒a≡b a b =
+    ⇒∶ (λ a∈[b] → ∈⇒∈ₚ a∈[b])
+    ⇐∶ λ a≡b → substₘ (λ c → a ∈ K[ c ]) a≡b here
 --------------------------------------------------------------------------------
 -- a ∉ ∅
 
-  a∉∅ : (a : A) → a ∉′ ∅
+  a∉∅ : (a : A) → [ a ∉ ∅ ]
   a∉∅ a = lem refl 
     where
-      lem : ∀ {a x} → x ≡ ∅ → a ∉′ x 
-      lem x≡∅ here = [a]≢∅ x≡∅
-      lem x≡∅ (left a∈x)  = lem (⊔-conicalˡ _ _ x≡∅) a∈x
-      lem x≡∅ (right a∈x) = lem (⊔-conicalʳ _ _ x≡∅) a∈x
-      lem {x} x≡∅ (sq a∈x a∈x₁ i) =
-        toPathP (isProp⊥ (transp (λ i → Cubical.Data.Empty.⊥) i0 (g a∈x)) (g a∈x₁)) i
-          where g = lem x≡∅
+      lem : ∀ {a x} → x ≡ ∅ → [ a ∉ x ]
+      lem {a} {x} x≡∅ a∈x = elim∈prop {P = λ {y} b∈y → y ≡ ∅ → [ a ∉ y ]}
+        (propPi (λ _ → snd (a ∉ _))) (λ [a]≡∅ _ → [a]≢∅ [a]≡∅)
+        (λ _ _ a∈y h y∪z≡∅ _ → h (⊔-conicalˡ _ _ y∪z≡∅) a∈y)
+        (λ _ _ a∈z h y∪z≡∅ _ → h (⊔-conicalʳ _ _ y∪z≡∅) a∈z) x a∈x x≡∅ a∈x
           
-  a∈x⇒[x]∪x≡x : ∀ (a : A) x → [ a ∈ x ] → [ (K.[ a ] ∪ x) ≡ₖ x ]
-  a∈x⇒[x]∪x≡x a = elim∈prop (trunc _ _) (idem a)
+  a∈x⇒[a]∪x≡x : ∀ (a : A) x → [ a ∈ x ] → K.[ a ] ∪ x ≡ x
+  a∈x⇒[a]∪x≡x a = elim∈prop (trunc _ _) (idem a)
     (λ x y a∈x a∪x≡x →
       K.[ a ] ∪ x ∪ y   ≡⟨ assoc _ _ _ ⟩
       (K.[ a ] ∪ x) ∪ y ≡⟨ cong (_∪ y) a∪x≡x ⟩
@@ -106,7 +115,7 @@ module _ {A : Set} where
   y⊆x⇒y∪x≡x {x = x} {y} =
     ⇒∶ elimKprop {P = λ z → [ z ⊆ x ⇒ (z ∪ x ≡ₖ x) ]} (λ p q → funExt λ f → trunc _ _ (p f ) (q f))
     (λ _ → nl _)
-    (λ a p → a∈x⇒[x]∪x≡x a x (p a here))
+    (λ a p → a∈x⇒[a]∪x≡x a x (p a here))
     (λ u v pu pv f →
       (u ∪ v) ∪ x ≡⟨ sym (assoc _ _ _) ⟩
       u ∪ (v ∪ x) ≡⟨ cong (u ∪_) (pv (λ x z → f x (right z))) ⟩
@@ -122,14 +131,36 @@ module _ {A : Set} where
 
   setExt : {x y : K A} → (x ≡ₖ y) ≡ (∀[ a ∶ A ] a ∈ y ⇔ a ∈ x)
   setExt {x} {y} =
-    x ≡ₖ y                      ≡⟨ sym (y∪x≡x∧x∪y≡y) ⟩
-    (y ∪ x ≡ₖ x) ⊓ (x ∪ y ≡ₖ y) ≡⟨ cong₂ (_⊓_) (sym y⊆x⇒y∪x≡x) (sym y⊆x⇒y∪x≡x)  ⟩
-    (y ⊆ x) ⊓ (x ⊆ y)           ≡⟨ cong₂ {x = y ⊆ x} {y = ∀[ a ∶ A ] a ∈ y ⇒ a ∈ x} _⊓_ refl {u = x ⊆ y} {v = ∀[ a ∶ A ] a ∈ x ⇒ a ∈ y} refl ⟩
+    x ≡ₖ y
+      ≡⟨ sym (y∪x≡x∧x∪y≡y) ⟩
+    (y ∪ x ≡ₖ x) ⊓ (x ∪ y ≡ₖ y)
+      ≡⟨ cong₂ (_⊓_) (sym y⊆x⇒y∪x≡x) (sym y⊆x⇒y∪x≡x)  ⟩
+    (y ⊆ x) ⊓ (x ⊆ y)
+      ≡⟨ cong₂ {y = ∀[ a ∶ A ] a ∈ y ⇒ a ∈ x} _⊓_ refl {v = ∀[ a ∶ A ] a ∈ x ⇒ a ∈ y} refl ⟩
     (∀[ a ∶ A ] a ∈ y ⇒ a ∈ x) ⊓ (∀[ a ∶ A ] a ∈ x ⇒ a ∈ y)
-      ≡⟨ ⊓-∀-comm (λ a → a ∈ y ⇒ a ∈ x) (λ a → a ∈ x ⇒ a ∈ y) ⟩
-    (∀[ a ∶ A ] (a ∈ y ⇒ a ∈ x) ⊓ (a ∈ x ⇒ a ∈ y)) ≡⟨ hProp≡ refl ⟩ 
+      ≡⟨ ⊓-∀-distrib (λ a → a ∈ y ⇒ a ∈ x) (λ a → a ∈ x ⇒ a ∈ y) ⟩
+    (∀[ a ∶ A ] (a ∈ y ⇒ a ∈ x) ⊓ (a ∈ x ⇒ a ∈ y))
+      ≡⟨ hProp≡ refl ⟩ 
     (∀[ a ∶ A ] (a ∈ y ⇔ a ∈ x))                   ∎
-    where ℓ-one = ℓ-suc ℓ-zero
 
+  module Decidable (_≟_ : [ ∀[ x ∶ A ] ∀[ y ∶ A ] Decₚ (x ≡ₘ y) ]) where
+  
+    substₚ : ∀ {a b : A} (B : A → Set) → (∀ a → isProp (B a)) → ∥ a ≡ b ∥ → B a → B b
+    substₚ {b = b} B Bprop = elimPropTrunc (λ _ → propPi λ _ → Bprop b) (subst B) 
 
-  module Decidable (A : Set)(_≟_ : {A : Set} (x y : A) → Dec [ x ≡ₘ y ]) where
+    _∈?_ : [ ∀[ a ∶ A ] ∀[ x ∶ K A ] Decₚ (a ∈ x) ]
+    a ∈? x = elimKprop {P = λ y → [ Decₚ (a ∈ y) ]} (isPropDec (snd (a ∈ _)))
+      (no (a∉∅ a)) f g x
+      where
+        f : [ ∀[ b ] Decₚ (a ∈ K[ b ]) ]
+        f b with a ≟ b
+        ... | yes a≡b = yes (substₘ (λ b → a ∈ K[ b ]) a≡b here)
+        ... | no ¬a≡b = no λ a∈[b] → ¬a≡b (L.pathTo⇒ (a∈[b]⇒a≡b a b) a∈[b])
+        
+        g : [ ∀[ x ] ∀[ y ] Decₚ (a ∈ x) ⇒ Decₚ (a ∈ y) ⇒ Decₚ (a ∈ x ∪ y) ]
+        g x y (yes p) (yes q) = yes (left p)
+        g x y (yes p) (no ¬q) = yes (left p)
+        g x y (no ¬p) (yes q) = yes (right q)
+        g x y (no ¬p) (no ¬q) =
+          no λ a∈x∪y → elimPropTrunc (λ _ → λ ())
+            (elim-⊎ (λ a∈ₚx → ¬p (∈ₚ⇒∈ a∈ₚx)) λ a∈ₚy → ¬q (∈ₚ⇒∈ a∈ₚy)) (∈⇒∈ₚ a∈x∪y)

@@ -5,7 +5,7 @@ module FiniteSets.Kuratowski.Properties where
 open import Cubical.Core.Everything
 open import Cubical.Foundations.HLevels
 
-import Cubical.Foundations.Logic as L hiding (⊔-idem)
+open import Cubical.Foundations.Logic as L hiding (⊔-idem)
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
@@ -22,11 +22,14 @@ open import FiniteSets.Semilattice
 
 private
   variable
-    ℓ     : Level
-    X : Set ℓ
+    ℓ : Level
+--------------------------------------------------------------------------------
+-- K A is a ∪-semilattice.
 
 module Lattice where
-  ∪-idem : (x : K X) → x ∪ x ≡ x
+  variable
+    A : Set ℓ
+  ∪-idem : (x : K A) → x ∪ x ≡ x
   ∪-idem = elimKprop (trunc _ _) (nl ∅) idem λ x y x∪x=x y∪y=y → 
     (x ∪ y) ∪ x ∪ y   ≡⟨ assoc (x ∪ y) x y ⟩
     ((x ∪ y) ∪ x) ∪ y ≡⟨ cong (_∪ y) (cong (_∪ x) (com x y)) ⟩
@@ -38,8 +41,8 @@ module Lattice where
     x ∪ y             ∎
 
   KSemilattice : Set ℓ → Semilattice ℓ
-  KSemilattice X = record
-    { A = K X
+  KSemilattice A = record
+    { A = K A
     ; _⊔_ = _∪_ 
     ; ⊥ = ∅
     ; isSemilattice = record
@@ -52,8 +55,7 @@ module Lattice where
     }
 open Lattice using (KSemilattice)
 
-module _ {A : Set} where
-  open L
+module _ {A : Set}where    
   open Properties (KSemilattice A)
 
   -- Two definitions of membership relations are the same. 
@@ -106,7 +108,8 @@ module _ {A : Set} where
 
   y⊆x⇒y∪x≡x  : ∀ {x y : K A} → (y ⊆ x) ≡ (y ∪ x) ≡ₖ x
   y⊆x⇒y∪x≡x {x = x} {y} =
-    ⇒∶ elimKprop {P = λ z → [ z ⊆ x ⇒ (z ∪ x ≡ₖ x) ]} (λ p q → funExt λ f → trunc _ _ (p f ) (q f))
+    ⇒∶ elimKprop {P = λ z → [ z ⊆ x ⇒ (z ∪ x ≡ₖ x) ]}
+    (λ p q → funExt λ f → trunc _ _ (p f ) (q f))
     (λ _ → nl _)
     (λ a p → a∈x⇒[a]∪x≡x a x (p a here))
     (λ u v pu pv f →
@@ -136,21 +139,3 @@ module _ {A : Set} where
       ≡⟨ hProp≡ refl ⟩ 
     (∀[ a ∶ A ] (a ∈ y ⇔ a ∈ x))                   ∎
 
-  module Decidable (_≟_ : [ ∀[ x ∶ A ] ∀[ y ∶ A ] Decₚ (x ≡ₘ y) ]) where
-  
-    _∈?_ : [ ∀[ a ∶ A ] ∀[ x ∶ K A ] Decₚ (a ∈ x) ]
-    a ∈? x = elimKprop {P = λ y → [ Decₚ (a ∈ y) ]} (isPropDec (snd (a ∈ _)))
-      (no (a∉∅ a)) f g x
-      where
-        f : [ ∀[ b ] Decₚ (a ∈ K[ b ]) ]
-        f b with a ≟ b
-        ... | yes a≡b = yes (substₘ (λ b → a ∈ K[ b ]) a≡b here)
-        ... | no ¬a≡b = no λ a∈[b] → ¬a≡b (∈⇒∈ₚ a∈[b])
-        
-        g : [ ∀[ x ] ∀[ y ] Decₚ (a ∈ x) ⇒ Decₚ (a ∈ y) ⇒ Decₚ (a ∈ x ∪ y) ]
-        g x y (yes p) (yes q) = yes (left p)
-        g x y (yes p) (no ¬q) = yes (left p)
-        g x y (no ¬p) (yes q) = yes (right q)
-        g x y (no ¬p) (no ¬q) =
-          no λ a∈x∪y → elimPropTrunc (λ _ → λ ())
-            (elim-⊎ (λ a∈ₚx → ¬p (∈ₚ⇒∈ a∈ₚx)) λ a∈ₚy → ¬q (∈ₚ⇒∈ a∈ₚy)) (∈⇒∈ₚ a∈x∪y)

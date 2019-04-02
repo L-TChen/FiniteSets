@@ -25,9 +25,6 @@ private
     ℓ     : Level
     X : Set ℓ
 
-KAisSet : isSet (K X)
-KAisSet = trunc
-
 module Lattice where
   ∪-idem : (x : K X) → x ∪ x ≡ x
   ∪-idem = elimKprop (trunc _ _) (nl ∅) idem λ x y x∪x=x y∪y=y → 
@@ -58,16 +55,8 @@ open Lattice using (KSemilattice)
 module _ {A : Set} where
   open L
   open Properties (KSemilattice A)
-    
-  [a]≢∅ : {a : A} → [ K.[ a ] ≢ₖ ∅ ]
-  [a]≢∅ p = subst (fst ∘ KPropRec (λ a → (K.[ a ] ≡ ∅) , trunc _ _)) p p
 
-  
-  []-injective : {A : Set} {a b : A} → K.[ a ] ≡ₖ K.[ b ] ≡ a ≡ₘ b 
-  []-injective {a = a} {b} =
-    ⇒∶ (λ eq → subst (fst ∘ KPropRec (λ b → a L.≡ₘ b)) eq ∣ refl ∣)
-    ⇐∶ elimPropTrunc (λ _ → trunc K[ a ] K[ b ]) (cong K[_])
-
+  -- Two definitions of membership relations are the same. 
   ∈⇒∈ₚ : ∀ {a : A} {x} → [ a ∈ x ⇒ a ∈ₚ x ]
   ∈⇒∈ₚ {a = a} {x = x} a∈x = elim∈prop {P = λ {y} _ → [ a ∈ₚ y ]}
     (λ {y} → snd (a ∈ₚ y)) ∣ refl ∣
@@ -81,11 +70,15 @@ module _ {A : Set} where
 
   ∈≡∈ₚ : ∀ {a : A}{x : K A} → a ∈ x ≡ a ∈ₚ x
   ∈≡∈ₚ = ⇔toPath ∈⇒∈ₚ ∈ₚ⇒∈
+    
+  [a]≢∅ : {a : A} → [ K.[ a ] ≢ₖ ∅ ]
+  [a]≢∅ p = subst (fst ∘ KPropRec (λ a → (K.[ a ] ≡ ∅) , trunc _ _)) p p
 
-  a∈[b]⇒a≡b : ∀ (a b : A) → (a ∈ K.[ b ]) ≡ (a ≡ₘ b)
-  a∈[b]⇒a≡b a b =
-    ⇒∶ (λ a∈[b] → ∈⇒∈ₚ a∈[b])
-    ⇐∶ λ a≡b → substₘ (λ c → a ∈ K[ c ]) a≡b here
+  -- not used 
+  []-injective : {A : Set} {a b : A} → K.[ a ] ≡ₖ K.[ b ] ≡ a ≡ₘ b 
+  []-injective {a = a} {b} =
+    ⇒∶ (λ eq → subst (fst ∘ a ∈ₚ_) eq ∣ refl ∣)
+    ⇐∶ elimPropTrunc (λ _ → trunc K[ a ] K[ b ]) (cong K[_])
 --------------------------------------------------------------------------------
 -- a ∉ ∅
 
@@ -145,9 +138,6 @@ module _ {A : Set} where
 
   module Decidable (_≟_ : [ ∀[ x ∶ A ] ∀[ y ∶ A ] Decₚ (x ≡ₘ y) ]) where
   
-    substₚ : ∀ {a b : A} (B : A → Set) → (∀ a → isProp (B a)) → ∥ a ≡ b ∥ → B a → B b
-    substₚ {b = b} B Bprop = elimPropTrunc (λ _ → propPi λ _ → Bprop b) (subst B) 
-
     _∈?_ : [ ∀[ a ∶ A ] ∀[ x ∶ K A ] Decₚ (a ∈ x) ]
     a ∈? x = elimKprop {P = λ y → [ Decₚ (a ∈ y) ]} (isPropDec (snd (a ∈ _)))
       (no (a∉∅ a)) f g x
@@ -155,7 +145,7 @@ module _ {A : Set} where
         f : [ ∀[ b ] Decₚ (a ∈ K[ b ]) ]
         f b with a ≟ b
         ... | yes a≡b = yes (substₘ (λ b → a ∈ K[ b ]) a≡b here)
-        ... | no ¬a≡b = no λ a∈[b] → ¬a≡b (L.pathTo⇒ (a∈[b]⇒a≡b a b) a∈[b])
+        ... | no ¬a≡b = no λ a∈[b] → ¬a≡b (∈⇒∈ₚ a∈[b])
         
         g : [ ∀[ x ] ∀[ y ] Decₚ (a ∈ x) ⇒ Decₚ (a ∈ y) ⇒ Decₚ (a ∈ x ∪ y) ]
         g x y (yes p) (yes q) = yes (left p)

@@ -68,7 +68,7 @@ K≡L A = isoToPath (iso f g f∘g=id g∘f=id)
     f : K A → L A
     f = recK trunc [] [_] _⊔_ ⊔-identityˡ ⊔-identityʳ (⊔-idem ∘ [_]) ⊔-assoc ⊔-comm
       where open Semilattice (L-Semilattice A)
-      
+
     g : L A → K A
     g = recL trunck ∅ (λ a x → K[ a ] ∪ x)
       (λ a x   → assoc _ _ _ ∙ cong (_∪ x) (idem a))

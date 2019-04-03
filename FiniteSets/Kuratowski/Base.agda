@@ -19,9 +19,9 @@ private
     x y   : A
     p q   : x ≡ y
 
-infix 6 _∈′_
-infix 6 _∈_
-infix 6 _∉_
+infix 7 _∈′_
+infix 7 _∈_
+infix 7 _∉_
 --infix 6 _∉′_
 infix 7 _⊆_
 
@@ -111,7 +111,7 @@ module _ where
 -- Properties (Mere propositions)
 open L hiding ([_])
 -- A mere identity 
-infix 5 _≡ₖ_
+infix 8 _≡ₖ_
 
 _≡ₖ_ : K A → K A → hProp
 x ≡ₖ y = (x ≡ y) , trunc x y
@@ -135,7 +135,7 @@ _∉_ : (a : A) → K A → hProp
 a ∉ x = ¬ (a ∈ x)
 
 _⊆_ : K A → K A → hProp
-x ⊆ y = ∀[ a ∶ _ ] a ∈ x ⇒ a ∈ y
+x ⊆ y = ∀[ a ] a ∈ x ⇒ a ∈ y
       
 elim∈prop : {a : A} → ∀ {P : ∀ {x} → a ∈′ x → Set ℓ}
           → (PProp : ∀ {x} {p : a ∈′ x} → isProp (P p))
@@ -157,4 +157,4 @@ elim∈prop {P = P} PProp hereᴾ leftᴾ rightᴾ x (sq a∈x a∈x′ i) = toP
 -- An alternative definition `a ∈ x` of membership relation defined by
 -- recursion on the finite set x.
 _∈ₚ_ : {A : Set (ℓ-zero)} (a : A) → K A → hProp {ℓ-zero}
-a ∈ₚ x = KPropRec (λ c → a ≡ₘ c) x
+a ∈ₚ x = KPropRec (λ c → a ≡ₚ c) x

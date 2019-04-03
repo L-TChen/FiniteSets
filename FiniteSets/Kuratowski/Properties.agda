@@ -66,18 +66,18 @@ module _ {A : Set}where
     
   ∈ₚ⇒∈ : ∀ {a} {x : K A} → [ a ∈ₚ x ⇒ a ∈ x ]
   ∈ₚ⇒∈ {a} {x} a∈x = elimKprop {P = λ y → [ (a ∈ₚ y) ⇒ a ∈ y ]} (propPi λ _ → snd (a ∈ _))
-    (λ ()) (λ b a≡b → substₘ (λ c → a ∈ K[ c ]) a≡b here)
+    (λ ()) (λ b a≡b → substₚ (λ c → a ∈ K[ c ]) a≡b here)
     (λ y z py pz pyz → elimPropTrunc (λ _ → sq)
       (elim-⊎ (λ a∈y → left (py a∈y)) λ a∈z → right (pz a∈z)) pyz) x a∈x
 
   ∈≡∈ₚ : ∀ {a : A}{x : K A} → a ∈ x ≡ a ∈ₚ x
   ∈≡∈ₚ = ⇔toPath ∈⇒∈ₚ ∈ₚ⇒∈
-    
+
   [a]≢∅ : {a : A} → [ K.[ a ] ≢ₖ ∅ ]
   [a]≢∅ p = subst (fst ∘ KPropRec (λ a → (K.[ a ] ≡ ∅) , trunc _ _)) p p
 
   -- not used 
-  []-injective : {A : Set} {a b : A} → K.[ a ] ≡ₖ K.[ b ] ≡ a ≡ₘ b 
+  []-injective : {A : Set} {a b : A} → K.[ a ] ≡ₖ K.[ b ] ≡ a ≡ₚ b 
   []-injective {a = a} {b} =
     ⇒∶ (λ eq → subst (fst ∘ a ∈ₚ_) eq ∣ refl ∣)
     ⇐∶ elimPropTrunc (λ _ → trunc K[ a ] K[ b ]) (cong K[_])
@@ -135,7 +135,5 @@ module _ {A : Set}where
       ≡⟨ cong₂ {y = ∀[ a ∶ A ] a ∈ y ⇒ a ∈ x} _⊓_ refl {v = ∀[ a ∶ A ] a ∈ x ⇒ a ∈ y} refl ⟩
     (∀[ a ∶ A ] a ∈ y ⇒ a ∈ x) ⊓ (∀[ a ∶ A ] a ∈ x ⇒ a ∈ y)
       ≡⟨ ⊓-∀-distrib (λ a → a ∈ y ⇒ a ∈ x) (λ a → a ∈ x ⇒ a ∈ y) ⟩
-    (∀[ a ∶ A ] (a ∈ y ⇒ a ∈ x) ⊓ (a ∈ x ⇒ a ∈ y))
-      ≡⟨ hProp≡ refl ⟩ 
     (∀[ a ∶ A ] (a ∈ y ⇔ a ∈ x))                   ∎
 

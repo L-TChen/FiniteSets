@@ -1,7 +1,7 @@
 {-# OPTIONS --safe --cubical #-}
 
 module FiniteSets.Semilattice where
-open import Cubical.Core.Prelude
+open import Cubical.Foundations.Prelude
 
 private
   variable

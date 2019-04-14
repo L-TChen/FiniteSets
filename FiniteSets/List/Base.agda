@@ -2,10 +2,13 @@
 
 module FiniteSets.List.Base where
 
-open import Cubical.Core.Everything
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Logic hiding ([_])
 open import Cubical.HITs.SetTruncation
 
-open import Cubical.Relation.Nullary
+
+infixr 8 _++_
+infixr 10 _∷_
 
 private
   variable
@@ -18,7 +21,6 @@ data L (A : Set ℓ) : Set ℓ where
   dup   : ∀ a xs   → a ∷ a ∷ xs ≡ a ∷ xs
   com   : ∀ a b xs → a ∷ b ∷ xs ≡ b ∷ a ∷ xs
   trunc : isSet (L A)
-infixr 10 _∷_
 
 pattern [_] a = a ∷ []
 
@@ -59,17 +61,5 @@ recL BSet z f dupᴮ comᴮ =
   elimL BSet z (λ a _ b → f a b)
     (λ a _ pxs → dupᴮ a pxs) (λ a b _ pb → comᴮ a b pb)
 
-infixr 5 _++_
 _++_ : L A → L A → L A
 _++_ xs ys = recL trunc ys (λ x xs++ys → x ∷ xs++ys) dup com xs
-
-data _∈_ {A : Set ℓ} (a : A) : L A → Set ℓ where
-  here  : ∀ {xs}            → a ∈ a ∷ xs
-  there : ∀ {xs b} → a ∈ xs → a ∈ b ∷ xs
-
-_∉_ : {A : Set ℓ} → A → L A → Set ℓ
-a ∉ xs = ¬ (a ∈ xs)
-
-
-infix 5 _∈_
-infix 5 _∉_

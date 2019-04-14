@@ -2,12 +2,9 @@
 
 module FiniteSets.Kuratowski.Base where
 
-open import Cubical.Core.Prelude 
-open import Cubical.Core.PropositionalTruncation
+open import Cubical.Foundations.Prelude 
 open import Cubical.Data.Sum
---open import Cubical.Foundations.HLevels
 import Cubical.Foundations.Logic as L
---open import Cubical.Relation.Nullary
 
 open import Cubical.HITs.SetTruncation
 
@@ -126,7 +123,7 @@ data _∈′_ {A : Set ℓ} (a : A) : (x : K A) → Set ℓ where
   here  : a ∈′ [ a ]
   left  : ∀ {x y} → (a∈x : a ∈′ x) → a ∈′ x ∪ y
   right : ∀ {x y} → (a∈y : a ∈′ y) → a ∈′ x ∪ y
-  sq    : ∀ {x}   → (p q : a ∈′ x) → p ≡ q
+  sq    : ∀ {x}   → isProp (a ∈′ x)
   
 _∈_ : (a : A) → K A → hProp
 a ∈ x = a ∈′ x , sq

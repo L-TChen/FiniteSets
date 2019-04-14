@@ -2,22 +2,21 @@
 
 module FiniteSets.Kuratowski.Properties where
 
-open import Cubical.Core.Everything
-open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.Prelude
 
 open import Cubical.Foundations.Logic as L hiding (⊔-idem)
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.Isomorphism
-open import Cubical.Foundations.Univalence
+
+open import Cubical.HITs.SetTruncation
+open import Cubical.HITs.PropositionalTruncation
+
 open import Cubical.Data.Prod
 open import Cubical.Data.Sum
-open import Cubical.Data.Bool
-open import Cubical.Data.Empty 
 
-open import Cubical.Relation.Nullary
+--open import Cubical.Relation.Nullary
 
 open import FiniteSets.Kuratowski.Base renaming ([_] to K[_])
-
 open import FiniteSets.Semilattice
 
 private

@@ -4,8 +4,8 @@ open import Cubical.Foundations.Logic
 
 module FiniteSets.Kuratowski.Decidable.Base where
 
-open import Cubical.Core.Prelude 
-open import Cubical.Core.PropositionalTruncation
+open import Cubical.Foundations.Prelude 
+open import Cubical.HITs.PropositionalTruncation
 open import Cubical.Data.Sum
 open import Cubical.Relation.Nullary 
 

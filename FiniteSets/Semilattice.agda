@@ -38,7 +38,7 @@ module Bool where
     ; _⊔_ = _or_
     ; ⊥ = false
     ; isSemilattice = record
-      { AisSet      = BoolIsSet
+      { AisSet      = isSetBool
       ; ⊔-identityˡ = or-identityˡ
       ; ⊔-identityʳ = or-identityʳ
       ; ⊔-idem      = or-idem 

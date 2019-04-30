@@ -3,7 +3,6 @@
 module FiniteSets.List.Decidable.Properties where
 
 open import Cubical.Foundations.Prelude 
---open import Cubical.Core.PropositionalTruncation
 open import Cubical.Data.Sum
 open import Cubical.Data.Empty
 open import Cubical.Relation.Nullary

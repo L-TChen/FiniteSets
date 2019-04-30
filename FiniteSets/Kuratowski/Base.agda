@@ -1,4 +1,4 @@
-{-# OPTIONS --safe --cubical  --without-K #-}
+{-# OPTIONS --safe --cubical  #-}
 
 module FiniteSets.Kuratowski.Base where
 

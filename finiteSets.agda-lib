@@ -1,5 +1,4 @@
 name: finite-sets
 depend:
   cubical 
-  standard-library
 include: .

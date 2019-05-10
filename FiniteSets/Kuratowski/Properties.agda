@@ -14,8 +14,6 @@ open import Cubical.HITs.PropositionalTruncation
 open import Cubical.Data.Prod
 open import Cubical.Data.Sum
 
---open import Cubical.Relation.Nullary
-
 open import FiniteSets.Kuratowski.Base renaming ([_] to K[_])
 open import FiniteSets.Semilattice
 

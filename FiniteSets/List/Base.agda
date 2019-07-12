@@ -3,9 +3,7 @@
 module FiniteSets.List.Base where
 
 open import Cubical.Foundations.Prelude
-open import Cubical.Foundations.Logic hiding ([_])
-open import Cubical.HITs.SetTruncation
-
+open import Cubical.Foundations.HLevels
 
 infixr 8 _++_
 infixr 10 _∷_
@@ -38,7 +36,7 @@ elimL PSet z f fdup fcom (x ∷ xs) = f x xs (elimL PSet z f fdup fcom xs)
 elimL {P = P} PSet z f fdup fcom (dup a xs i)  = fdup a xs (elimL PSet z f fdup fcom xs) i 
 elimL PSet z f fdup fcom (com a b xs i)        = fcom a b xs (elimL PSet z f fdup fcom xs) i
 elimL {A = A} PSet z f fdup fcom (trunc xs ys p q i j) =
-  elimSquash₀ {A = L A} (\ xs → PSet {xs}) (trunc xs ys p q) (g xs) (g ys) (cong g p) (cong g q) i j
+  isOfHLevel→isOfHLevelDep {n = 2} (\_ → PSet) (g xs) (g ys) (cong g p) (cong g q)  (trunc xs ys p q) i j
   where g = elimL PSet z f fdup fcom
 
 elimLprop : ∀  {P : L A → Set ℓ}

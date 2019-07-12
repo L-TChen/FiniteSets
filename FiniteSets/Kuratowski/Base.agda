@@ -3,10 +3,9 @@
 module FiniteSets.Kuratowski.Base where
 
 open import Cubical.Foundations.Prelude 
-open import Cubical.Data.Sum
 import Cubical.Foundations.Logic as L
 
-open import Cubical.HITs.SetTruncation
+open import Cubical.Foundations.HLevels
 
 private
   variable
@@ -61,7 +60,7 @@ elimK PSet z s f nlᴾ nrᴾ idemᴾ assocᴾ comᴾ (assoc x y k i) = assocᴾ 
 elimK PSet z s f nlᴾ nrᴾ idemᴾ assocᴾ comᴾ (com x y i) = comᴾ x y  (g x) (g y) i
   where g = elimK PSet z s f nlᴾ nrᴾ idemᴾ assocᴾ comᴾ
 elimK {A = A} PSet z s f nlᴾ nrᴾ idemᴾ assocᴾ comᴾ (trunc x y p q i j) =
-  elimSquash₀ {A = K A} (λ _ → PSet) (trunc x y p q) (g x) (g y) (cong g p) (cong g q) i j
+  isOfHLevel→isOfHLevelDep {n = 2} (λ _ → PSet) (g x) (g y) (cong g p) (cong g q) (trunc x y p q) i j
   where g = elimK PSet z s f nlᴾ nrᴾ idemᴾ assocᴾ comᴾ
 
 elimKprop : (PProp : {x : K A} → isProp (P x))

@@ -88,7 +88,10 @@ recK : isSet B
      → (∀ x y → f x y ≡ f y x)
      → K A → B  
 recK Bset z ins f nlᴮ nrᴮ idemᴮ assocᴮ comᴮ = elimK Bset z ins
-  (λ _ _ → f) (λ _ → nlᴮ) (λ _ → nrᴮ) idemᴮ  (λ _ _ _ → assocᴮ) λ _ _ → comᴮ             
+  (λ _ _ → f) (λ _ → nlᴮ) (λ _ → nrᴮ) idemᴮ  (λ _ _ _ → assocᴮ) λ _ _ → comᴮ
+
+mapK : (A → B) → K A → K B
+mapK f = recK trunc ∅ (λ a → [ f a ]) _∪_ nl nr (λ a → idem (f a)) assoc com
 --------------------------------------------------------------------------------
 --
 module _ where

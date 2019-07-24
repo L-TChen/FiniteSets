@@ -50,7 +50,7 @@ module Lattice where
       ; ⊔-assoc     = assoc
       ; ⊔-comm      = com }
     }
-open Lattice using (KSemilattice)
+open Lattice using (KSemilattice) public
 
 module _ {A : Set}where    
   open Properties (KSemilattice A)
